@@ -9,6 +9,7 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/timer.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -16,21 +17,63 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Create two equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 33%;
+            padding: 50px;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
 </head>
 <body>
-<p id="accountAddress" class="text-center"></p>
 
-<p id="sellerAddress" class="text-center">proba</p>
-<p id="judgeAddress" class="text-center">proba</p>
-<p id="initialPrice" class="text-center">proba</p>
-<p id="biddingPeriodDays" class="text-center">proba</p>
-<p id="minimumPriceIncrement" class="text-center">proba</p>
-<p id="startTime" class="text-center">proba</p>
-<p id="lastBidTimestamp" class="text-center">proba</p>
+<label for="accountAddress">Logged in as </label>
+<p id="accountAddress"></p>
+<label for="accountBalance"> with balance </label>
+<p id="accountBalance"></p>
 
-<p id="currentHighestBid" class="text-center">proba</p>
+<div class="row">
+    <div class="column">
+        <h2 class="text-center">Contract data</h2>
 
-<form onSubmit="App.createBid()">
+        <p id="contractAddress"></p>
+        <p id="contractBalance"></p>
+
+        <p id="initialPrice"></p>
+        <p id="biddingPeriodDays"></p>
+        <p id="minimumPriceIncrement"></p>
+        <p id="startTime"></p>
+    </div>
+    <div class="column">
+        <h2 class="text-center">Participants</h2>
+
+        <p id="sellerAddress"></p>
+        <p id="judgeAddress"></p>
+    </div>
+
+    <div class="column">
+        <h2 class="text-center">Bidding info</h2>
+
+        <p id="lastBidTimestamp"></p>
+
+        <p id="currentHighestBid"></p>
+        <p id="currentHighestBidderAddress"></p>
+    </div>
+</div>
+
+<form id="bidForm" onSubmit="App.createBid()">
     <div class="form-group">
         <label for="inputBid">Place bid</label>
         <input class="form-control" id="inputBid"/>
@@ -39,42 +82,66 @@
     <hr/>
 </form>
 
-<div class="container" style="width: 650px;">
-    <div class="row">
-        <div class="col-lg-12">
-            <h1 class="text-center">Election Results</h1>
-            <hr/>
-            <br/>
-            <div id="loader">
-                <p class="text-center">Loading...</p>
-            </div>
-            <div id="content" style="display: none;">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Votes</th>
-                    </tr>
-                    </thead>
-                    <tbody id="candidatesResults">
-                    </tbody>
-                </table>
-                <hr/>
-                <form onSubmit="App.castVote(); return false;">
-                    <div class="form-group">
-                        <label for="candidatesSelect">Select Candidate</label>
-                        <select class="form-control" id="candidatesSelect">
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Vote</button>
-                    <hr/>
-                </form>
-                <!--<p id="accountAddress" class="text-center"></p>-->
-            </div>
-        </div>
+<button id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
+
+<h4 id="outcome"></h4>
+
+<h1>Countdown Clock</h1>
+<div id="clockdiv">
+    <div>
+        <span class="days"></span>
+        <div class="smalltext">Days</div>
+    </div>
+    <div>
+        <span class="hours"></span>
+        <div class="smalltext">Hours</div>
+    </div>
+    <div>
+        <span class="minutes"></span>
+        <div class="smalltext">Minutes</div>
+    </div>
+    <div>
+        <span class="seconds"></span>
+        <div class="smalltext">Seconds</div>
     </div>
 </div>
+
+<!--<div class="container" style="width: 650px;">-->
+    <!--<div class="row">-->
+        <!--<div class="col-lg-12">-->
+            <!--<h1 class="text-center">Election Results</h1>-->
+            <!--<hr/>-->
+            <!--<br/>-->
+            <!--<div id="loader">-->
+                <!--<p class="text-center">Loading...</p>-->
+            <!--</div>-->
+            <!--<div id="content" style="display: none;">-->
+                <!--<table class="table">-->
+                    <!--<thead>-->
+                    <!--<tr>-->
+                        <!--<th scope="col">#</th>-->
+                        <!--<th scope="col">Name</th>-->
+                        <!--<th scope="col">Votes</th>-->
+                    <!--</tr>-->
+                    <!--</thead>-->
+                    <!--<tbody id="candidatesResults">-->
+                    <!--</tbody>-->
+                <!--</table>-->
+                <!--<hr/>-->
+                <!--<form onSubmit="App.castVote(); return false;">-->
+                    <!--<div class="form-group">-->
+                        <!--<label for="candidatesSelect">Select Candidate</label>-->
+                        <!--<select class="form-control" id="candidatesSelect">-->
+                        <!--</select>-->
+                    <!--</div>-->
+                    <!--<button type="submit" class="btn btn-primary">Vote</button>-->
+                    <!--<hr/>-->
+                <!--</form>-->
+                <!--&lt;!&ndash;<p id="accountAddress" class="text-center"></p>&ndash;&gt;-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

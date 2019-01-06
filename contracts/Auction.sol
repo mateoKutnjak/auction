@@ -85,9 +85,11 @@ contract Auction {
     }
 
     function settleEarly() public {
-        require(outcome == Outcome.NOT_FINISHED);
-        require(currentHighestBidderAddress != address(0));
-        require(msg.sender == sellerAddress);
+        require(outcome == Outcome.NOT_FINISHED, "For early settle outcome must be NOT_FINISHED.");
+        require(currentHighestBidderAddress != address(0), "For early settle highest bidder must exist.");
+        require(msg.sender == sellerAddress, "For early settle sender must be the seller.");
+
+        outcome = Outcome.SUCCESSFUL;
 
         sellerAddress.transfer(address(this).balance);
     }

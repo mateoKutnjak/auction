@@ -2,7 +2,8 @@ App = {
     web3Provider: null,
     contracts: {},
     account: '0x0',
-    hasVoted: false,
+    deadline: null,
+    biddingPeriodDays: 0,
 
     init: function () {
         return App.initWeb3();
@@ -64,25 +65,46 @@ App = {
         web3.eth.getCoinbase(function (err, account) {
             if (err === null) {
                 App.account = account;
-                $("#accountAddress").html("Your Account: " + account);
+                $("#accountAddress").html(account);
+
+                web3.eth.getBalance(account, function (err, balance) {
+                    $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
+
+                });
             }
         });
 
         // Load contract data
         App.contracts.Auction.deployed().then(function (instance) {
             auctionInstance = instance;
+
+            web3.eth.getBalance(instance.address, function (err, balance) {
+                $('#contractBalance').html("Contract balance = " + web3.fromWei(balance.toNumber(), 'ether'));
+
+            });
+
+            $('#contractAddress').html("Contract address = " + instance.address);
             return auctionInstance.initialPrice();
         }).then(function (_initialPrice) {
-            $('#initialPrice').html("Initial price = " + _initialPrice.toNumber());
+            $('#initialPrice').html("Initial price = " + web3.fromWei(_initialPrice.toNumber(), 'ether'));
             return auctionInstance.sellerAddress();
         }).then(function (_sellerAddress) {
             $('#sellerAddress').html("Seller address = " + _sellerAddress);
+
+            if (App.account === _sellerAddress) {
+                $('#earlySettleButton').show();
+            } else {
+                $('#earlySettleButton').hide();
+            }
+
             return auctionInstance.judgeAddress();
         }).then(function (_judgeAddress) {
             $('#judgeAddress').html("Judge address = " + _judgeAddress);
             return auctionInstance.biddingPeriodDays();
         }).then(function (_biddingPeriodDays) {
-            $('#biddingPeriodDays').html("Bidding period days = " + _biddingPeriodDays.toNumber());
+            App.biddingPeriodDays = _biddingPeriodDays.toNumber();
+            $('#biddingPeriodDays').html("Bidding period days = " + biddingPeriodDays);
+
             return auctionInstance.minimumPriceIncrement();
         }).then(function (_minimumPriceIncrement) {
             $('#minimumPriceIncrement').html("Minimum price increment = " + web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
@@ -91,12 +113,38 @@ App = {
             $('#currentHighestBid').html("Current highest bid = " + web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
             return auctionInstance.startTime();
         }).then(function (_startTime) {
-            var date = new Date(_startTime*1000).toISOString();
-            $('#startTime').html("Start time = " + date);
+            var start_time = new Date(_startTime * 1000).toISOString();
+
+            deadline = new Date(App.biddingPeriodDays * 24 * 60 * 60 * 1000 + Date.parse(new Date(_startTime * 1000)));
+            App.initializeClock('clockdiv', deadline);
+
+            $('#startTime').html("Start time = " + start_time);
             return auctionInstance.lastBidTimestamp();
         }).then(function (_lastBidTimestamp) {
-            var date = new Date(_lastBidTimestamp*1000).toISOString();
+            var date = new Date(_lastBidTimestamp * 1000).toISOString();
             $('#lastBidTimestamp').html("Last bid timestamp = " + date);
+            return auctionInstance.currentHighestBidderAddress();
+        }).then(function (_currentHighestBidderAddress) {
+            $('#currentHighestBidderAddress').html("Current highest bidder = " + _currentHighestBidderAddress);
+            return auctionInstance.outcome();
+        }).then(function (_outcome) {
+            var outcome = _outcome.toNumber();
+            var outcomeMessage = null;
+
+            if (outcome === 0) {
+                outcomeMessage = "Auction still on progress. Place your bid below."
+            } else if (outcome === 1) {
+                outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids.";
+            } else if (outcome === 2) {
+                outcomeMessage = "Auction has finished successfully.";
+            }
+
+            $('#outcome').html(outcomeMessage);
+
+            if (_outcome !== 0) {
+                $('#bidForm').hide();
+                $('#earlySettleButton').hide()
+            }
         });
 
         // var candidatesResults = $("#candidatesResults");
@@ -146,6 +194,25 @@ App = {
         });
     },
 
+    earlySettle: function () {
+        App.contracts.Auction.deployed().then(function (instance) {
+            return instance.settleEarly({from: App.account});
+        }).then(function (result) {
+            console.log(result);
+        }).catch(function (err) {
+            console.error(err);
+        });
+
+        App.contracts.Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.sellerAddress();
+        }).then(function (_sellerAddress) {
+            if (_sellerAddress === App.account) {
+
+            }
+        });
+    },
+
     castVote: function () {
         var candidateId = $('#candidatesSelect').val();
         App.contracts.Election.deployed().then(function (instance) {
@@ -157,7 +224,47 @@ App = {
         }).catch(function (err) {
             console.error(err);
         });
+    },
+
+    getTimeRemaining: function (endtime) {
+        var t = Date.parse(endtime) - Date.parse(new Date());
+        var seconds = Math.floor((t / 1000) % 60);
+        var minutes = Math.floor((t / 1000 / 60) % 60);
+        var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+        var days = Math.floor(t / (1000 * 60 * 60 * 24));
+        return {
+            'total': t,
+            'days': days,
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds
+        };
+    },
+
+    initializeClock: function (id, endtime) {
+        var clock = document.getElementById(id);
+        var daysSpan = clock.querySelector('.days');
+        var hoursSpan = clock.querySelector('.hours');
+        var minutesSpan = clock.querySelector('.minutes');
+        var secondsSpan = clock.querySelector('.seconds');
+
+        function updateClock() {
+            var t = App.getTimeRemaining(endtime);
+
+            daysSpan.innerHTML = t.days;
+            hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
+            minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+            secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+
+            if (t.total <= 0) {
+                clearInterval(timeinterval);
+            }
+        }
+
+        updateClock();
+        var timeinterval = setInterval(updateClock, 1000);
     }
+
 };
 
 $(function () {

@@ -4,105 +4,131 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
     <title>Election Results</title>
 
-    <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/timer.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
     <style>
         * {
             box-sizing: border-box;
         }
 
-        /* Create two equal columns that floats next to each other */
-        .column {
+        .column3 {
             float: left;
-            width: 33%;
+            width: 33.33%;
             padding: 50px;
+            margin: auto;
         }
 
-        /* Clear floats after the columns */
+        .column2 {
+            float: left;
+            width: 50%;
+            padding: 50px;
+            margin: auto;
+        }
+
         .row:after {
             content: "";
             display: table;
             clear: both;
         }
+
+        .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            animation: spin 2s linear infinite;
+
+            position: fixed;
+
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: block;
+            opacity: 0.7;
+            background-color: #fff;
+            z-index: 99;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
 
-<label for="accountAddress">Logged in as </label>
-<p id="accountAddress"></p>
-<label for="accountBalance"> with balance </label>
-<p id="accountBalance"></p>
+<div class="loader" id="loader"></div>
+
+<label class="label" for="accountAddress">Logged in as </label>
+<p class="list-inline" id="accountAddress"></p>
+<label class="label" for="accountBalance"> with balance </label>
+<p class="list-inline" id="accountBalance"></p>
 
 <div class="row">
-    <div class="column">
-        <h2 class="text-center">Contract data</h2>
+    <div class="column3">
+        <h1 class="text-center">Contract data</h1>
 
         <p id="contractAddress"></p>
         <p id="contractBalance"></p>
 
         <p id="initialPrice"></p>
-        <p id="biddingPeriodDays"></p>
         <p id="minimumPriceIncrement"></p>
-        <p id="startTime"></p>
     </div>
-    <div class="column">
-        <h2 class="text-center">Participants</h2>
+    <div class="column3">
+        <h1 class="text-center">Participants</h1>
 
         <p id="sellerAddress"></p>
         <p id="judgeAddress"></p>
     </div>
 
-    <div class="column">
-        <h2 class="text-center">Bidding info</h2>
+    <div class="column3">
+        <h1 class="text-center">Bidding info</h1>
 
         <p id="lastBidTimestamp"></p>
-
-        <p id="currentHighestBid"></p>
-        <p id="currentHighestBidderAddress"></p>
     </div>
 </div>
 
-<form id="bidForm" onSubmit="App.createBid()">
-    <div class="form-group">
-        <label for="inputBid">Place bid</label>
-        <input class="form-control" id="inputBid"/>
-    </div>
-    <button type="submit" class="btn btn-primary">Place bid</button>
-    <hr/>
-</form>
+<label id="outcome" class="label-info col-lg-12"></label>
 
-<button id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
-
-<h4 id="outcome"></h4>
-
-<h1>Countdown Clock</h1>
-<div id="clockdiv">
-    <div>
-        <span class="days"></span>
-        <div class="smalltext">Days</div>
+<div class="row">
+    <div class="column3">
+        <h1>Highest bid</h1>
+        <p id="currentHighestBid"></p>
+        <h1>By</h1>
+        <p id="currentHighestBidderAddress"></p>
     </div>
-    <div>
-        <span class="hours"></span>
-        <div class="smalltext">Hours</div>
+    <div class="column3">
+        <form id="bidForm" onSubmit="App.createBid()">
+            <div class="form-group">
+                <label for="inputBid">Place bid</label>
+                <input class="form-control" id="inputBid"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Place bid</button>
+            <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
+        </form>
     </div>
-    <div>
-        <span class="minutes"></span>
-        <div class="smalltext">Minutes</div>
-    </div>
-    <div>
-        <span class="seconds"></span>
-        <div class="smalltext">Seconds</div>
+    <div id="clockdiv" class="column3">
+        <h1>Countdown Clock</h1>
+        <div>
+            <span class="days"></span>
+            <div class="smalltext">Days</div>
+        </div>
+        <div>
+            <span class="hours"></span>
+            <div class="smalltext">Hours</div>
+        </div>
+        <div>
+            <span class="minutes"></span>
+            <div class="smalltext">Minutes</div>
+        </div>
+        <div>
+            <span class="seconds"></span>
+            <div class="smalltext">Seconds</div>
+        </div>
     </div>
 </div>
 

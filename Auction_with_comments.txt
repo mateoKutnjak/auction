@@ -1,0 +1,170 @@
+pragma solidity ^0.4.24;
+
+/// @title Superclass for more specific types of auctions.
+/// @author Mateo Kutnjak
+/// @notice Use this contract as superclass for specific auction implementation.
+contract Auction {
+
+    /// Types of outcome for an auction.
+    /// NOT_FINISHED:
+    ///     Auction still in progress. Opportunity for a new bidder to place
+    ///     highest bid.
+    /// NOT_SUCCESSFUL:
+    ///     Minimal bidding price is not reached (nobody offered price above
+    ///     certain threshold).
+    /// SUCCESSFUL:
+    ///     Highest bidding price is above minimum required price. Time interval
+    ///     after last valid bid has passed.
+    enum Outcome {
+        NOT_FINISHED,
+        NOT_SUCCESSFUL,
+        SUCCESSFUL
+    }
+
+    /// @dev Current outcome of auction
+    Outcome public outcome;
+
+    /// @dev Timestamp of auction start
+    uint256 public startTime;
+
+    /// @dev Address of an third participant who confirms transfer of goods to
+    ///     highest bidder.
+    address public judgeAddress;
+
+    /// @dev Address of a seller (owner of goods)
+    address public sellerAddress;
+
+    /// @dev Address of current highest bidder.
+    address public currentHighestBidderAddress;
+
+    /// @dev Address of final highest bidder.
+    address public finalHighestBidderAddress;
+
+    /// @dev Current highest bid offered by a buyer.
+    uint public currentHighestBid;
+
+    /// @dev Price set as starting price by seller.
+    uint public initialPrice;
+
+    /// @dev Period after which auction stops if new higher bid is not provided.
+    uint public biddingPeriodDays;
+
+    /// @dev Timestamp of the last highest bid.
+    uint public lastBidTimestamp;
+
+    /// @dev Minimum price increment to old highest bid for new one to be valid.
+    uint public minimumPriceIncrement;
+
+    /// @notice If seller is not specified, address of constructor caller will
+    ///         be given as address of a seller. Judge must be specified. Seller
+    ///         cannot be judge.
+    /// @param _initialPrice Starting price of the auction.
+    /// @param _biddingPeriodDays Maximum period without new bids in days for auction to end.
+    /// @param _minimumPriceIncrement Minimum price increment fo new highest bid to be valid.
+    constructor(address _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodDays, uint _minimumPriceIncrement) public {
+        initialPrice = _initialPrice;
+        biddingPeriodDays = _biddingPeriodDays;
+        minimumPriceIncrement = _minimumPriceIncrement;
+
+        lastBidTimestamp = now;
+        startTime = now;
+
+        if (sellerAddress == address(0)) {
+            sellerAddress = msg.sender;
+        }
+
+        outcome = Outcome.NOT_FINISHED;
+    }
+
+    /// Places new bid. For a bid to be valid it has to fulfil three conditions.
+    ///     1) Value of a bid must be higher than initial auction price.
+    ///     2) Value of a bid must be higher for a specified minimum price increment.
+    ///     3) Bid must be placed before the bidding period after last highest bid ends.
+
+    /// @notice Irregular offers are returned to sender of an offer.
+    /// @notice Replaced highest bid are returned to its bidder.
+    function bid() public payable {
+        if(msg.value < initialPrice) {
+            msg.sender.transfer(msg.value);
+            revert("Initial bid not higher than initial price. Returning funds to bidder...");
+        }
+
+        else if(msg.value- currentHighestBid < minimumPriceIncrement) {
+            msg.sender.transfer(msg.value);
+            revert("Minimum price increment not satisfied. Returning funds to bidder...");
+        }
+
+        else if(now - lastBidTimestamp >= biddingPeriodDays * 1 days) {
+            msg.sender.transfer(msg.value);
+            revert("Bidding period expired. Returning funds to bidder and finishing auction...");
+        }
+
+        if(currentHighestBidderAddress != address(0)) {
+            currentHighestBidderAddress.transfer(this.balance - msg.value);
+        }
+
+        currentHighestBid = msg.value;
+        currentHighestBidderAddress = msg.sender;
+        lastBidTimestamp = now;
+    }
+
+    /// Ends an auction if bidding period has passed.
+    /// @return Highest bidder address or address(0) if auction is not yet over.
+    function getHighestBidder() public returns (address) {
+        if(now - lastBidTimestamp >= biddingPeriodDays * 1 days) {
+            finishAuction(currentHighestBidderAddress != address(0) ? Outcome.SUCCESSFUL : Outcome.NOT_SUCCESSFUL, currentHighestBidderAddress);
+        }
+        return currentHighestBidderAddress;
+    }
+
+    /// @dev Called when auction finishes (outcome is not NOT_FINISHED)
+    /// @param _outcome Outcome of the auction.
+    /// @param _highestBidder Address of the highest bidder or address(0) if auction did not finish successfully.
+    function finishAuction(Outcome _outcome, address _highestBidder) internal {
+        require(_outcome != Outcome.NOT_FINISHED); // This should not happen.
+        outcome = _outcome;
+        finalHighestBidderAddress = _highestBidder;
+    }
+
+    /// Settles the auction and sends the funds to the auction seller.
+    /// This function can only be called when the auction has finished successfully.
+    /// Anyone can settle the auction when it is finished successfully.
+
+    /// @dev Sends contract funds to the seller.
+    /// @notice Can only be called if the auction ended successfully.
+    /// @notice Only judge and seller can trigger auction funds transfer to seller
+    ///         after the auction is over.
+    /// @notice Outcome needs to be successful
+    function settle() public {
+        require(outcome == Outcome.SUCCESSFUL);
+        require(msg.sender == judgeAddress || msg.sender == sellerAddress);
+
+        sellerAddress.transfer(this.balance);
+    }
+
+    /// Settles the auction and sends the funds to the auction seller before it has ended.
+    /// This function can only be called by seller before the auction has ended.
+    /// Highest bidder must exist (someone has to bid something).
+
+    /// @dev Sends contract funds to the seller.
+    /// @notice Can only be called if the auction has not ended.
+    /// @notice Only seller can trigger auction funds transfer to seller
+    ///         after the auction is over.
+    function settleEarly() public {
+        require(outcome == Outcome.NOT_FINISHED);
+        require(currentHighestBidderAddress != address(0));
+        require(msg.sender == sellerAddress);
+
+        sellerAddress.transfer(this.balance);
+    }
+
+    /// @dev Refunds to highest bidder if outcome is not successful.
+    /// @notice Only judge and highest bidder can request refund.
+    function refund() public {
+        require(outcome == Outcome.NOT_SUCCESSFUL);
+        require(currentHighestBidderAddress != address(0));
+        require(msg.sender == currentHighestBidderAddress || msg.sender == judgeAddress);
+
+        currentHighestBidderAddress.transfer(this.balance);
+    }
+}

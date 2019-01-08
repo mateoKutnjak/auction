@@ -1,0 +1,5 @@
+truffle==5.0.1
+solidity=0.5.0
+node==9.3.0
+npm==6.4.1
+ganache-cli==6.2.3

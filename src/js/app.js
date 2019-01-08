@@ -10,13 +10,10 @@ App = {
     },
 
     initWeb3: function () {
-        // TODO: refactor conditional
         if (typeof web3 !== 'undefined') {
-            // If a web3 instance is already provided by Meta Mask.
             App.web3Provider = web3.currentProvider;
             web3 = new Web3(web3.currentProvider);
         } else {
-            // Specify default instance if no web3 instance provided
             App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
             web3 = new Web3(App.web3Provider);
         }
@@ -25,13 +22,9 @@ App = {
 
     initContract: function () {
         $.getJSON("Auction.json", function (auction) {
-            // Instantiate a new truffle contract from the artifact
             App.contracts.Auction = TruffleContract(auction);
-            // Connect provider to interact with contract
             App.contracts.Auction.setProvider(App.web3Provider);
-
             // App.listenForEvents();
-
             return App.render();
         });
     },
@@ -61,18 +54,7 @@ App = {
         loader.show();
         content.hide();
 
-        // Load account data
-        web3.eth.getCoinbase(function (err, account) {
-            if (err === null) {
-                App.account = account;
-                $("#accountAddress").html(account);
-
-                web3.eth.getBalance(account, function (err, balance) {
-                    $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
-
-                });
-            }
-        });
+        App.renderAccountData();
 
         // Load contract data
         App.contracts.Auction.deployed().then(function (instance) {
@@ -103,48 +85,44 @@ App = {
             return auctionInstance.biddingPeriodDays();
         }).then(function (_biddingPeriodDays) {
             App.biddingPeriodDays = _biddingPeriodDays.toNumber();
-            $('#biddingPeriodDays').html("Bidding period days = " + biddingPeriodDays);
-
             return auctionInstance.minimumPriceIncrement();
         }).then(function (_minimumPriceIncrement) {
             $('#minimumPriceIncrement').html("Minimum price increment = " + web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
             return auctionInstance.currentHighestBid();
         }).then(function (_currentHighestBid) {
-            $('#currentHighestBid').html("Current highest bid = " + web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
+            $('#currentHighestBid').html(web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
             return auctionInstance.startTime();
         }).then(function (_startTime) {
-            var start_time = new Date(_startTime * 1000).toISOString();
-
             deadline = new Date(App.biddingPeriodDays * 24 * 60 * 60 * 1000 + Date.parse(new Date(_startTime * 1000)));
             App.initializeClock('clockdiv', deadline);
 
-            $('#startTime').html("Start time = " + start_time);
             return auctionInstance.lastBidTimestamp();
         }).then(function (_lastBidTimestamp) {
             var date = new Date(_lastBidTimestamp * 1000).toISOString();
             $('#lastBidTimestamp').html("Last bid timestamp = " + date);
             return auctionInstance.currentHighestBidderAddress();
         }).then(function (_currentHighestBidderAddress) {
-            $('#currentHighestBidderAddress').html("Current highest bidder = " + _currentHighestBidderAddress);
+            $('#currentHighestBidderAddress').html(_currentHighestBidderAddress);
             return auctionInstance.outcome();
         }).then(function (_outcome) {
             var outcome = _outcome.toNumber();
             var outcomeMessage = null;
 
-            if (outcome === 0) {
-                outcomeMessage = "Auction still on progress. Place your bid below."
-            } else if (outcome === 1) {
-                outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids.";
-            } else if (outcome === 2) {
-                outcomeMessage = "Auction has finished successfully.";
+            switch (outcome) {
+                case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
+                case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
+                case 2: outcomeMessage = "Auction has finished successfully."; break;
             }
 
             $('#outcome').html(outcomeMessage);
 
-            if (_outcome !== 0) {
+            if (outcome !== 0) {
                 $('#bidForm').hide();
-                $('#earlySettleButton').hide()
+                $('#earlySettleButton').hide();
+                $('#clockdiv').hide();
             }
+
+            $('#loader').hide();
         });
 
         // var candidatesResults = $("#candidatesResults");
@@ -181,6 +159,19 @@ App = {
         // });
     },
 
+    renderAccountData: function() {
+        web3.eth.getCoinbase(function (err, account) {
+            if (err === null) {
+                App.account = account;
+                $("#accountAddress").html(account);
+
+                web3.eth.getBalance(account, function (err, balance) {
+                    $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
+                });
+            }
+        });
+    },
+
     createBid: function () {
         var inputBid = parseFloat($('#inputBid').val());
 
@@ -210,19 +201,6 @@ App = {
             if (_sellerAddress === App.account) {
 
             }
-        });
-    },
-
-    castVote: function () {
-        var candidateId = $('#candidatesSelect').val();
-        App.contracts.Election.deployed().then(function (instance) {
-            return instance.vote(candidateId, {from: App.account});
-        }).then(function (result) {
-            // Wait for votes to update
-            $("#content").hide();
-            $("#loader").show();
-        }).catch(function (err) {
-            console.error(err);
         });
     },
 

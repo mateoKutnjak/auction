@@ -54,8 +54,12 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -63,32 +67,88 @@
 
 <div class="loader" id="loader"></div>
 
-<label class="label" for="accountAddress">Logged in as </label>
-<p class="list-inline" id="accountAddress"></p>
-<label class="label" for="accountBalance"> with balance </label>
-<p class="list-inline" id="accountBalance"></p>
+<p>
+    <label for="accountAddress">
+        <span>Logged in as: </span>
+        <small id="accountAddress"></small>
+    </label>
+</p>
+<p>
+    <label for="accountBalance">
+        <span>With balance: </span>
+        <small id="accountBalance"></small>
+    </label>
+</p>
 
 <div class="row">
     <div class="column3">
         <h1 class="text-center">Contract data</h1>
 
-        <p id="contractAddress"></p>
-        <p id="contractBalance"></p>
+        <p>
+            <label for="contractAddress">
+                <span class="label-info">Contract address: </span>
+                <small id="contractAddress"></small>
+            </label>
+        </p>
+        <p>
+            <label for="contractBalance">
+                <span class="label-info">Contract balance: </span>
+                <small id="contractBalance"></small>
+            </label>
+        </p>
+        <p>
+            <label for="initialPrice">
+                <span class="label-info">Initial price: </span>
+                <small id="initialPrice"></small>
+            </label>
+        </p>
+        <p>
+            <label for="minimumPriceIncrement">
+                <span class="label-info">Minimum increment: </span>
+                <small id="minimumPriceIncrement"></small>
+            </label>
+        </p>
 
-        <p id="initialPrice"></p>
-        <p id="minimumPriceIncrement"></p>
     </div>
     <div class="column3">
         <h1 class="text-center">Participants</h1>
 
-        <p id="sellerAddress"></p>
-        <p id="judgeAddress"></p>
+        <p>
+            <label for="sellerAddress">
+                <span class="label-info">Seller address: </span>
+                <small id="sellerAddress"></small>
+            </label>
+        </p>
+        <p>
+            <label for="judgeAddress">
+                <span class="label-info">Seller address: </span>
+                <small id="judgeAddress"></small>
+            </label>
+        </p>
     </div>
 
     <div class="column3">
         <h1 class="text-center">Bidding info</h1>
 
-        <p id="lastBidTimestamp"></p>
+        <p>
+            <label for="lastBidTimestamp">
+                <span class="label-info">Last bid occured: </span>
+                <small id="lastBidTimestamp"></small>
+            </label>
+        </p>
+        <p>
+            <label for="currentHighestBid">
+                <span class="label-info">Highest bid</span>
+                <small id="currentHighestBid"></small>
+            </label>
+        </p>
+
+        <p>
+            <label for="currentHighestBidderAddress">
+                <span class="label-info">Highest bidder address</span>
+                <small id="currentHighestBidderAddress"></small>
+            </label>
+        </p>
     </div>
 </div>
 
@@ -96,10 +156,13 @@
 
 <div class="row">
     <div class="column3">
-        <h1>Highest bid</h1>
-        <p id="currentHighestBid"></p>
-        <h1>By</h1>
-        <p id="currentHighestBidderAddress"></p>
+
+
+
+        <!--<label for="currentHighestBid" class="form-inline">Highest bid</label>-->
+        <!--<p id="currentHighestBid"></p>-->
+        <!--<h1>By</h1>-->
+        <!--<p id="currentHighestBidderAddress"></p>-->
     </div>
     <div class="column3">
         <form id="bidForm" onSubmit="App.createBid()">
@@ -133,40 +196,40 @@
 </div>
 
 <!--<div class="container" style="width: 650px;">-->
-    <!--<div class="row">-->
-        <!--<div class="col-lg-12">-->
-            <!--<h1 class="text-center">Election Results</h1>-->
-            <!--<hr/>-->
-            <!--<br/>-->
-            <!--<div id="loader">-->
-                <!--<p class="text-center">Loading...</p>-->
-            <!--</div>-->
-            <!--<div id="content" style="display: none;">-->
-                <!--<table class="table">-->
-                    <!--<thead>-->
-                    <!--<tr>-->
-                        <!--<th scope="col">#</th>-->
-                        <!--<th scope="col">Name</th>-->
-                        <!--<th scope="col">Votes</th>-->
-                    <!--</tr>-->
-                    <!--</thead>-->
-                    <!--<tbody id="candidatesResults">-->
-                    <!--</tbody>-->
-                <!--</table>-->
-                <!--<hr/>-->
-                <!--<form onSubmit="App.castVote(); return false;">-->
-                    <!--<div class="form-group">-->
-                        <!--<label for="candidatesSelect">Select Candidate</label>-->
-                        <!--<select class="form-control" id="candidatesSelect">-->
-                        <!--</select>-->
-                    <!--</div>-->
-                    <!--<button type="submit" class="btn btn-primary">Vote</button>-->
-                    <!--<hr/>-->
-                <!--</form>-->
-                <!--&lt;!&ndash;<p id="accountAddress" class="text-center"></p>&ndash;&gt;-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
+<!--<div class="row">-->
+<!--<div class="col-lg-12">-->
+<!--<h1 class="text-center">Election Results</h1>-->
+<!--<hr/>-->
+<!--<br/>-->
+<!--<div id="loader">-->
+<!--<p class="text-center">Loading...</p>-->
+<!--</div>-->
+<!--<div id="content" style="display: none;">-->
+<!--<table class="table">-->
+<!--<thead>-->
+<!--<tr>-->
+<!--<th scope="col">#</th>-->
+<!--<th scope="col">Name</th>-->
+<!--<th scope="col">Votes</th>-->
+<!--</tr>-->
+<!--</thead>-->
+<!--<tbody id="candidatesResults">-->
+<!--</tbody>-->
+<!--</table>-->
+<!--<hr/>-->
+<!--<form onSubmit="App.castVote(); return false;">-->
+<!--<div class="form-group">-->
+<!--<label for="candidatesSelect">Select Candidate</label>-->
+<!--<select class="form-control" id="candidatesSelect">-->
+<!--</select>-->
+<!--</div>-->
+<!--<button type="submit" class="btn btn-primary">Vote</button>-->
+<!--<hr/>-->
+<!--</form>-->
+<!--&lt;!&ndash;<p id="accountAddress" class="text-center"></p>&ndash;&gt;-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
 <!--</div>-->
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

@@ -61,17 +61,17 @@ App = {
             auctionInstance = instance;
 
             web3.eth.getBalance(instance.address, function (err, balance) {
-                $('#contractBalance').html("Contract balance = " + web3.fromWei(balance.toNumber(), 'ether'));
+                $('#contractBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
 
             });
 
-            $('#contractAddress').html("Contract address = " + instance.address);
+            $('#contractAddress').html(instance.address);
             return auctionInstance.initialPrice();
         }).then(function (_initialPrice) {
-            $('#initialPrice').html("Initial price = " + web3.fromWei(_initialPrice.toNumber(), 'ether'));
+            $('#initialPrice').html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
             return auctionInstance.sellerAddress();
         }).then(function (_sellerAddress) {
-            $('#sellerAddress').html("Seller address = " + _sellerAddress);
+            $('#sellerAddress').html(_sellerAddress);
 
             if (App.account === _sellerAddress) {
                 $('#earlySettleButton').show();
@@ -81,13 +81,13 @@ App = {
 
             return auctionInstance.judgeAddress();
         }).then(function (_judgeAddress) {
-            $('#judgeAddress').html("Judge address = " + _judgeAddress);
+            $('#judgeAddress').html(_judgeAddress);
             return auctionInstance.biddingPeriodDays();
         }).then(function (_biddingPeriodDays) {
             App.biddingPeriodDays = _biddingPeriodDays.toNumber();
             return auctionInstance.minimumPriceIncrement();
         }).then(function (_minimumPriceIncrement) {
-            $('#minimumPriceIncrement').html("Minimum price increment = " + web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
+            $('#minimumPriceIncrement').html(web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
             return auctionInstance.currentHighestBid();
         }).then(function (_currentHighestBid) {
             $('#currentHighestBid').html(web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
@@ -99,7 +99,7 @@ App = {
             return auctionInstance.lastBidTimestamp();
         }).then(function (_lastBidTimestamp) {
             var date = new Date(_lastBidTimestamp * 1000).toISOString();
-            $('#lastBidTimestamp').html("Last bid timestamp = " + date);
+            $('#lastBidTimestamp').html(date);
             return auctionInstance.currentHighestBidderAddress();
         }).then(function (_currentHighestBidderAddress) {
             $('#currentHighestBidderAddress').html(_currentHighestBidderAddress);

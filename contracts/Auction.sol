@@ -12,9 +12,7 @@ contract Auction {
 
     address public judgeAddress;
     address payable public sellerAddress;
-
     address payable public currentHighestBidderAddress;
-    address public finalHighestBidderAddress;
 
     uint public startTime;
     uint public currentTime;
@@ -87,16 +85,6 @@ contract Auction {
         outcome = Outcome.SUCCESSFUL;
 
         sellerAddress.transfer(address(this).balance);
-    }
-
-    function refund() public {
-        refreshOutcome();
-
-        require(outcome == Outcome.NOT_SUCCESSFUL);
-        require(currentHighestBidderAddress != address(0));
-        require(msg.sender == currentHighestBidderAddress || msg.sender == judgeAddress);
-
-        currentHighestBidderAddress.transfer(address(this).balance);
     }
 
     function refreshOutcome() internal {

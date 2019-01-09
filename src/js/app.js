@@ -173,8 +173,13 @@ App = {
     refreshElements: function() {
         if (App.outcome === 0) {
             $('#bidForm').show();
-            $('#earlySettleButton').show();
             $('#settleButton').hide();
+
+            if(App.account === App.sellerAddress) {
+                $('#earlySettleButton').show();
+            } else {
+                $('#earlySettleButton').hide();
+            }
         } else if(App.outcome === 1) {
             $('#bidForm').hide();
             $('#earlySettleButton').hide();

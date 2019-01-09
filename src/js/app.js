@@ -2,7 +2,16 @@ App = {
     web3Provider: null,
     contracts: {},
     account: '0x0',
-    deadline: null,
+
+    contractBalance: 0,
+    initialPrice: 0,
+    sellerAddress: "0x0",
+    judgeAddress: "0x0",
+    currentTime: 0,
+    minimumPriceIncrement: 0,
+    currentHighestBid: 0,
+    lastBidTimestamp: 0,
+    currentHighestBudderAddress: '0x0',
     biddingPeriodSeconds: 0,
 
     init: function () {
@@ -49,121 +58,14 @@ App = {
     render: function () {
         var auctionInstance;
         var loader = $("#loader");
-        var content = $("#content");
+
+        var bidForm = $('#bidForm');
+        var settleButton = $('#settleButton');
+        var earlySettleButton = $('#earlySettleButton');
 
         loader.show();
-        content.hide();
 
-        App.renderAccountData();
-
-        // Load contract data
-        App.contracts.Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-
-            web3.eth.getBalance(instance.address, function (err, balance) {
-                $('#contractBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
-
-            });
-
-            $('#contractAddress').html(instance.address);
-            return auctionInstance.initialPrice();
-        }).then(function (_initialPrice) {
-            $('#initialPrice').html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
-            return auctionInstance.sellerAddress();
-        }).then(function (_sellerAddress) {
-            $('#sellerAddress').html(_sellerAddress);
-
-            if (App.account === _sellerAddress) {
-                $('#earlySettleButton').show();
-            } else {
-                $('#earlySettleButton').hide();
-            }
-
-            return auctionInstance.judgeAddress();
-        }).then(function (_judgeAddress) {
-            $('#judgeAddress').html(_judgeAddress);
-            return auctionInstance.biddingPeriod();
-        }).then(function (_biddingPeriodSeconds) {
-            App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
-            $('#endTime').html(_biddingPeriodSeconds.toNumber());
-            return auctionInstance.currentTime();
-        }).then(function (_currentTime) {
-            $('#currentTime').html(_currentTime.toNumber());
-            return auctionInstance.minimumPriceIncrement();
-        }).then(function (_minimumPriceIncrement) {
-            $('#minimumPriceIncrement').html(web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
-            return auctionInstance.currentHighestBid();
-        }).then(function (_currentHighestBid) {
-            $('#currentHighestBid').html(web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
-            return auctionInstance.startTime();
-        }).then(function (_startTime) {
-            deadline = new Date(App.biddingPeriodSeconds * 1000 + Date.parse(new Date(_startTime * 1000)));
-            // App.initializeClock('clockdiv', deadline);
-
-            return auctionInstance.lastBidTimestamp();
-        }).then(function (_lastBidTimestamp) {
-            var date = new Date(_lastBidTimestamp * 1000).toISOString();
-            $('#lastBidTimestamp').html(date);
-            return auctionInstance.currentHighestBidderAddress();
-        }).then(function (_currentHighestBidderAddress) {
-            $('#currentHighestBidderAddress').html(_currentHighestBidderAddress);
-            return auctionInstance.outcome();
-        }).then(function (_outcome) {
-            var outcome = _outcome.toNumber();
-            var outcomeMessage = null;
-
-            switch (outcome) {
-                case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
-                case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
-                case 2: outcomeMessage = "Auction has finished successfully."; break;
-            }
-
-            $('#outcome').html(outcomeMessage);
-
-            if (outcome !== 0) {
-                $('#bidForm').hide();
-                $('#earlySettleButton').hide();
-                // $('#clockdiv').hide();
-            }
-
-            $('#loader').hide();
-        });
-
-        // var candidatesResults = $("#candidatesResults");
-        // candidatesResults.empty();
-        //
-        // var candidatesSelect = $('#candidatesSelect');
-        // candidatesSelect.empty();
-        //
-        // for (var i = 1; i <= candidatesCount; i++) {
-        //   electionInstance.candidates(i).then(function(candidate) {
-        //     var id = candidate[0];
-        //     var name = candidate[1];
-        //     var voteCount = candidate[2];
-        //
-        //     // Render candidate Result
-        //     var candidateTemplate = "<tr><th>" + id + "</th><td>" + name + "</td><td>" + voteCount + "</td></tr>"
-        //     candidatesResults.append(candidateTemplate);
-        //
-        //     // Render candidate ballot option
-        //     var candidateOption = "<option value='" + id + "' >" + name + "</ option>"
-        //     candidatesSelect.append(candidateOption);
-        //   });
-        // }
-        // return electionInstance.voters(App.account);
-        // }).then(function(hasVoted) {
-        //   // Do not allow a user to vote
-        //   if(hasVoted) {
-        //     $('form').hide();
-        //   }
-        //   loader.hide();
-        //   content.show();
-        // }).catch(function(error) {
-        //   console.warn(error);
-        // });
-    },
-
-    renderAccountData: function() {
+        // Load account data
         web3.eth.getCoinbase(function (err, account) {
             if (err === null) {
                 App.account = account;
@@ -174,6 +76,123 @@ App = {
                 });
             }
         });
+
+        // Load contract data
+        App.contracts.Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+
+            web3.eth.getBalance(instance.address, function (err, balance) {
+                if(err == null) {
+                    App.contractBalance = web3.fromWei(balance.toNumber(), 'ether');
+                    $('#contractBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
+                } else {
+                    console.log(err);
+                }
+            });
+
+            $('#contractAddress').html(instance.address);
+
+            return auctionInstance.initialPrice();
+
+        }).then(function (_initialPrice) {
+            App.initialPrice = _initialPrice.toNumber();
+
+            $('#initialPrice').html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
+
+            return auctionInstance.sellerAddress();
+
+        }).then(function (_sellerAddress) {
+            App.sellerAddress = _sellerAddress;
+
+            $('#sellerAddress').html(_sellerAddress);
+
+            if (App.account === _sellerAddress) {
+                $('#earlySettleButton').show();
+            } else {
+                $('#earlySettleButton').hide();
+            }
+
+            return auctionInstance.judgeAddress();
+        }).then(function (_judgeAddress) {
+            App.judgeAddress = _judgeAddress;
+
+            $('#judgeAddress').html(_judgeAddress);
+
+            return auctionInstance.biddingPeriod();
+        }).then(function (_biddingPeriodSeconds) {
+            App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
+
+            $('#endTime').html(_biddingPeriodSeconds.toNumber());
+
+            return auctionInstance.currentTime();
+        }).then(function (_currentTime) {
+            App.currentTime = _currentTime.toNumber();
+
+            $('#currentTime').html(App.currentTime);
+
+            return auctionInstance.minimumPriceIncrement();
+        }).then(function (_minimumPriceIncrement) {
+            App.minimumPriceIncrement = web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether');
+
+            $('#minimumPriceIncrement').html(App.minimumPriceIncrement);
+
+            return auctionInstance.currentHighestBid();
+        }).then(function (_currentHighestBid) {
+            App.currentHighestBid = web3.fromWei(_currentHighestBid.toNumber(), 'ether');
+
+            $('#currentHighestBid').html(App.currentHighestBid);
+
+            return auctionInstance.lastBidTimestamp();
+        }).then(function (_lastBidTimestamp) {
+            App.lastBidTimestamp = _lastBidTimestamp.toNumber();
+            var date = new Date(_lastBidTimestamp * 1000).toISOString();
+            $('#lastBidTimestamp').html(date);
+            return auctionInstance.currentHighestBidderAddress();
+        }).then(function (_currentHighestBidderAddress) {
+            App.currentHighestBudderAddress = _currentHighestBidderAddress;
+            $('#currentHighestBidderAddress').html(_currentHighestBidderAddress);
+            return auctionInstance.outcome();
+        }).then(function (_outcome) {
+            App.outcome = _outcome.toNumber();
+            var outcomeMessage = null;
+
+            switch (App.outcome) {
+                case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
+                case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
+                case 2: outcomeMessage = "Auction has finished successfully."; break;
+            }
+
+            $('#outcome').html(outcomeMessage);
+
+            App.refreshElements();
+
+            loader.hide();
+        });
+    },
+
+    refreshElements: function() {
+        if (App.outcome === 0) {
+            $('#bidForm').show();
+            $('#earlySettleButton').show();
+            $('#settleButton').hide();
+        } else if(App.outcome === 1) {
+            $('#bidForm').hide();
+            $('#earlySettleButton').hide();
+            $('#settleButton').hide();
+
+            if(App.account === App.judgeAddress) {
+
+            }
+        } else if(App.outcome === 2) {
+            $('#bidForm').hide();
+            $('#earlySettleButton').hide();
+
+            if((App.account === App.judgeAddress || App.account === App.sellerAddress) && App.contractBalance > 0) {
+                $('#settleButton').show()
+            } else {
+                $('#settleButton').hide()
+            }
+        }
     },
 
     createBid: function () {

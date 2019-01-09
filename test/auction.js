@@ -6,7 +6,7 @@ contract("Auction", function(accounts) {
     var judge = accounts[1];
     var other = accounts[2];
     var initial_price = 5;
-    var bidding_period_days = 1;
+    var bidding_period_seconds = 60;
     var minimum_price_increment = 1;
 
     beforeEach('setup contract for each test', function () {
@@ -14,7 +14,7 @@ contract("Auction", function(accounts) {
             seller,
             judge,
             initial_price,
-            bidding_period_days,
+            bidding_period_seconds,
             minimum_price_increment);
     });
 
@@ -30,24 +30,30 @@ contract("Auction", function(accounts) {
             return auctionInstance.initialPrice();
         }).then(function (_initialPrice) {
             assert.equal(_initialPrice, initial_price, "Initial price is correct.");
-            return auctionInstance.biddingPeriodDays();
-        }).then(function (_biddingPeriodDays) {
-            assert.equal(_biddingPeriodDays, bidding_period_days, "Bidding period in days is correct.");
+            return auctionInstance.biddingPeriod();
+        }).then(function (_biddingPeriod) {
+            assert.equal(_biddingPeriod, bidding_period_seconds, "Bidding period in seconds is correct.");
             return auctionInstance.minimumPriceIncrement();
         }).then(function (_minimumPriceIncrement) {
             assert.equal(_minimumPriceIncrement, minimum_price_increment, "Minimal price increment is correct.");
         });
     });
 
-    it('check settle from non-judge', function() {
+    it('check early settle without highest bidder', function() {
         return Auction.deployed().then(function (instance) {
             auctionInstance = instance;
-            return auctionInstance.settle({from: seller});
-        }).then(assert.fail).catch(function(error) {
-            assert(error.message.indexOf('revert') >= 0, "Seller cannot settle auction.");
-            return auctionInstance.settle({from: other});
-        }).then(assert.fail).catch(function(error) {
-            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction");
+            return auctionInstance.settleEarly({from: other});
+        }).then(function(result) {
+            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
+        });
+    });
+
+    it('check early settle without highest bidder', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.bid({from: other, gas: 300000, value: 1});
+        }).then(function(result) {
+            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
         });
     });
 

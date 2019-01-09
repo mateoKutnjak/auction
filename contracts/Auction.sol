@@ -17,19 +17,21 @@ contract Auction {
     address public finalHighestBidderAddress;
 
     uint public startTime;
+    uint public currentTime;
     uint public currentHighestBid;
     uint public initialPrice;
-    uint public biddingPeriodDays;
+    uint public biddingPeriod;
     uint public lastBidTimestamp;
     uint public minimumPriceIncrement;
 
-    constructor(address _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodDays, uint _minimumPriceIncrement) public {
+    constructor(address _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public {
         initialPrice = _initialPrice;
-        biddingPeriodDays = _biddingPeriodDays;
+        biddingPeriod = _biddingPeriodSeconds;
         minimumPriceIncrement = _minimumPriceIncrement;
 
-        lastBidTimestamp = now;
-        startTime = now;
+        lastBidTimestamp = 0;
+        startTime = 0;
+        currentTime = 0;
 
         if (sellerAddress == address(0)) {
             sellerAddress = msg.sender;
@@ -40,19 +42,21 @@ contract Auction {
     }
 
     function bid() public payable {
+        refreshOutcome();
+
+        if(outcome != Outcome.NOT_FINISHED) {
+            msg.sender.transfer(msg.value);
+            revert("Auction has finished, cannot bid. Returning funds.");
+        }
+
         if(msg.value < initialPrice) {
             msg.sender.transfer(msg.value);
             revert("Initial bid not higher than initial price. Returning funds to bidder...");
         }
 
-        else if(msg.value < currentHighestBid + minimumPriceIncrement) {
+        if(msg.value < currentHighestBid + minimumPriceIncrement) {
             msg.sender.transfer(msg.value);
             revert("Minimum price increment not satisfied. Returning funds to bidder...");
-        }
-
-        else if(now - lastBidTimestamp >= biddingPeriodDays * 1 days) {
-            msg.sender.transfer(msg.value);
-            revert("Bidding period expired. Returning funds to bidder and finishing auction...");
         }
 
         if(currentHighestBidderAddress != address(0)) {
@@ -61,23 +65,12 @@ contract Auction {
 
         currentHighestBid = msg.value;
         currentHighestBidderAddress = msg.sender;
-        lastBidTimestamp = now;
-    }
-
-    function getHighestBidder() public returns (address) {
-        if(now - lastBidTimestamp >= biddingPeriodDays * 1 days) {
-            finishAuction(currentHighestBidderAddress != address(0) ? Outcome.SUCCESSFUL : Outcome.NOT_SUCCESSFUL, currentHighestBidderAddress);
-        }
-        return currentHighestBidderAddress;
-    }
-
-    function finishAuction(Outcome _outcome, address _highestBidder) internal {
-        require(_outcome != Outcome.NOT_FINISHED); // This should not happen.
-        outcome = _outcome;
-        finalHighestBidderAddress = _highestBidder;
+        lastBidTimestamp = currentTime;
     }
 
     function settle() public {
+        refreshOutcome();
+
         require(outcome == Outcome.SUCCESSFUL);
         require(msg.sender == judgeAddress || msg.sender == sellerAddress);
 
@@ -85,6 +78,8 @@ contract Auction {
     }
 
     function settleEarly() public {
+        refreshOutcome();
+
         require(outcome == Outcome.NOT_FINISHED, "For early settle outcome must be NOT_FINISHED.");
         require(currentHighestBidderAddress != address(0), "For early settle highest bidder must exist.");
         require(msg.sender == sellerAddress, "For early settle sender must be the seller.");
@@ -95,10 +90,27 @@ contract Auction {
     }
 
     function refund() public {
+        refreshOutcome();
+
         require(outcome == Outcome.NOT_SUCCESSFUL);
         require(currentHighestBidderAddress != address(0));
         require(msg.sender == currentHighestBidderAddress || msg.sender == judgeAddress);
 
         currentHighestBidderAddress.transfer(address(this).balance);
+    }
+
+    function refreshOutcome() internal {
+        if(currentTime - startTime >= biddingPeriod * 1 seconds) {
+            if(currentHighestBidderAddress != address(0)) {
+                outcome = Outcome.SUCCESSFUL;
+            } else {
+                outcome = Outcome.NOT_SUCCESSFUL;
+            }
+        }
+    }
+
+    function setCurrentTime(uint _currentTime) public {
+        require(_currentTime > currentTime, "Time can only be wind forward.");
+        currentTime = _currentTime;
     }
 }

@@ -3,7 +3,7 @@ App = {
     contracts: {},
     account: '0x0',
     deadline: null,
-    biddingPeriodDays: 0,
+    biddingPeriodSeconds: 0,
 
     init: function () {
         return App.initWeb3();
@@ -82,9 +82,13 @@ App = {
             return auctionInstance.judgeAddress();
         }).then(function (_judgeAddress) {
             $('#judgeAddress').html(_judgeAddress);
-            return auctionInstance.biddingPeriodDays();
-        }).then(function (_biddingPeriodDays) {
-            App.biddingPeriodDays = _biddingPeriodDays.toNumber();
+            return auctionInstance.biddingPeriod();
+        }).then(function (_biddingPeriodSeconds) {
+            App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
+            $('#endTime').html(_biddingPeriodSeconds.toNumber());
+            return auctionInstance.currentTime();
+        }).then(function (_currentTime) {
+            $('#currentTime').html(_currentTime.toNumber());
             return auctionInstance.minimumPriceIncrement();
         }).then(function (_minimumPriceIncrement) {
             $('#minimumPriceIncrement').html(web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether'));
@@ -93,8 +97,8 @@ App = {
             $('#currentHighestBid').html(web3.fromWei(_currentHighestBid.toNumber(), 'ether'));
             return auctionInstance.startTime();
         }).then(function (_startTime) {
-            deadline = new Date(App.biddingPeriodDays * 24 * 60 * 60 * 1000 + Date.parse(new Date(_startTime * 1000)));
-            App.initializeClock('clockdiv', deadline);
+            deadline = new Date(App.biddingPeriodSeconds * 1000 + Date.parse(new Date(_startTime * 1000)));
+            // App.initializeClock('clockdiv', deadline);
 
             return auctionInstance.lastBidTimestamp();
         }).then(function (_lastBidTimestamp) {
@@ -119,7 +123,7 @@ App = {
             if (outcome !== 0) {
                 $('#bidForm').hide();
                 $('#earlySettleButton').hide();
-                $('#clockdiv').hide();
+                // $('#clockdiv').hide();
             }
 
             $('#loader').hide();
@@ -185,6 +189,34 @@ App = {
         });
     },
 
+    changeTime: function() {
+        var inputTime = parseInt($('#inputTime').val());
+
+        App.contracts.Auction.deployed().then(function (instance) {
+            return instance.setCurrentTime(inputTime);
+        }).then(function (result) {
+            console.log(result);
+
+            if(inputTime >= App.biddingPeriodSeconds) {
+                $('#settleButton').show();
+            }
+
+        }).catch(function (err) {
+            debugger;
+            console.error(err);
+        });
+    },
+
+    settle: function() {
+        App.contracts.Auction.deployed().then(function (instance) {
+            return instance.settle({from: App.account});
+        }).then(function (result) {
+            console.log(result);
+        }).catch(function (err) {
+            console.error(err);
+        });
+    },
+
     earlySettle: function () {
         App.contracts.Auction.deployed().then(function (instance) {
             return instance.settleEarly({from: App.account});
@@ -204,44 +236,44 @@ App = {
         });
     },
 
-    getTimeRemaining: function (endtime) {
-        var t = Date.parse(endtime) - Date.parse(new Date());
-        var seconds = Math.floor((t / 1000) % 60);
-        var minutes = Math.floor((t / 1000 / 60) % 60);
-        var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-        var days = Math.floor(t / (1000 * 60 * 60 * 24));
-        return {
-            'total': t,
-            'days': days,
-            'hours': hours,
-            'minutes': minutes,
-            'seconds': seconds
-        };
-    },
-
-    initializeClock: function (id, endtime) {
-        var clock = document.getElementById(id);
-        var daysSpan = clock.querySelector('.days');
-        var hoursSpan = clock.querySelector('.hours');
-        var minutesSpan = clock.querySelector('.minutes');
-        var secondsSpan = clock.querySelector('.seconds');
-
-        function updateClock() {
-            var t = App.getTimeRemaining(endtime);
-
-            daysSpan.innerHTML = t.days;
-            hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
-            minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-            secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
-
-            if (t.total <= 0) {
-                clearInterval(timeinterval);
-            }
-        }
-
-        updateClock();
-        var timeinterval = setInterval(updateClock, 1000);
-    }
+    // getTimeRemaining: function (endtime) {
+    //     var t = Date.parse(endtime) - Date.parse(new Date());
+    //     var seconds = Math.floor((t / 1000) % 60);
+    //     var minutes = Math.floor((t / 1000 / 60) % 60);
+    //     var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+    //     var days = Math.floor(t / (1000 * 60 * 60 * 24));
+    //     return {
+    //         'total': t,
+    //         'days': days,
+    //         'hours': hours,
+    //         'minutes': minutes,
+    //         'seconds': seconds
+    //     };
+    // },
+    //
+    // initializeClock: function (id, endtime) {
+    //     var clock = document.getElementById(id);
+    //     var daysSpan = clock.querySelector('.days');
+    //     var hoursSpan = clock.querySelector('.hours');
+    //     var minutesSpan = clock.querySelector('.minutes');
+    //     var secondsSpan = clock.querySelector('.seconds');
+    //
+    //     function updateClock() {
+    //         var t = App.getTimeRemaining(endtime);
+    //
+    //         daysSpan.innerHTML = t.days;
+    //         hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
+    //         minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+    //         secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+    //
+    //         if (t.total <= 0) {
+    //             clearInterval(timeinterval);
+    //         }
+    //     }
+    //
+    //     updateClock();
+    //     var timeinterval = setInterval(updateClock, 1000);
+    // }
 
 };
 

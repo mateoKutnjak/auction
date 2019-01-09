@@ -3,7 +3,7 @@ truffle migrate --reset         # changing old smart contract
                                 # reruns all migrations from the beginning
 truffle console
 >> app.candidates(1)
->> app.candidates(1).then(function(c) {candidate = c;})
+>> app.candidates(1).then(function(c) {candidate = c;)
 >> candidate.voteCount.toNumber()
 >> web3.eth.getAccounts()
 >> web3.eth.getAccounts().then(function(c) {a=c;}); a[0]
@@ -14,3 +14,4 @@ nom run dev                     # start lite server
 
 
 ### MetaMash secret phrases: account comic ball skill gadget slice pull mom enact scare grain fresh
+### Chrome metamask secret phrases: hotel rare camera improve effort insane cattle kit mad sunny gentle inside

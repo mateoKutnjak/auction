@@ -108,6 +108,18 @@
                 <small id="minimumPriceIncrement"></small>
             </label>
         </p>
+        <p>
+            <label for="endTime">
+                <span class="label-info">End time: </span>
+                <small id="endTime"></small>
+            </label>
+        </p>
+        <p>
+            <label for="currentTime">
+                <span class="label-info">Current time: </span>
+                <small id="currentTime"></small>
+            </label>
+        </p>
 
     </div>
     <div class="column3">
@@ -121,7 +133,7 @@
         </p>
         <p>
             <label for="judgeAddress">
-                <span class="label-info">Seller address: </span>
+                <span class="label-info">Judge address: </span>
                 <small id="judgeAddress"></small>
             </label>
         </p>
@@ -155,44 +167,47 @@
 <label id="outcome" class="label-info col-lg-12"></label>
 
 <div class="row">
-    <div class="column3">
-
-
-
-        <!--<label for="currentHighestBid" class="form-inline">Highest bid</label>-->
-        <!--<p id="currentHighestBid"></p>-->
-        <!--<h1>By</h1>-->
-        <!--<p id="currentHighestBidderAddress"></p>-->
+    <div class="column2">
+        <form id="timeForm" onSubmit="App.changeTime()">
+            <div class="form-group">
+                <label for="inputTime">Change time</label>
+                <input class="form-control" id="inputTime"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Change time</button>
+        </form>
     </div>
-    <div class="column3">
+    <div class="column2">
         <form id="bidForm" onSubmit="App.createBid()">
             <div class="form-group">
-                <label for="inputBid">Place bid</label>
+                <label for="bidForm">Place bid</label>
                 <input class="form-control" id="inputBid"/>
             </div>
             <button type="submit" class="btn btn-primary">Place bid</button>
-            <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
         </form>
     </div>
-    <div id="clockdiv" class="column3">
-        <h1>Countdown Clock</h1>
-        <div>
-            <span class="days"></span>
-            <div class="smalltext">Days</div>
-        </div>
-        <div>
-            <span class="hours"></span>
-            <div class="smalltext">Hours</div>
-        </div>
-        <div>
-            <span class="minutes"></span>
-            <div class="smalltext">Minutes</div>
-        </div>
-        <div>
-            <span class="seconds"></span>
-            <div class="smalltext">Seconds</div>
-        </div>
-    </div>
+
+    <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
+    <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
+
+    <!--<div id="clockdiv" class="column3">-->
+        <!--<h1>Countdown Clock</h1>-->
+        <!--<div>-->
+            <!--<span class="days"></span>-->
+            <!--<div class="smalltext">Days</div>-->
+        <!--</div>-->
+        <!--<div>-->
+            <!--<span class="hours"></span>-->
+            <!--<div class="smalltext">Hours</div>-->
+        <!--</div>-->
+        <!--<div>-->
+            <!--<span class="minutes"></span>-->
+            <!--<div class="smalltext">Minutes</div>-->
+        <!--</div>-->
+        <!--<div>-->
+            <!--<span class="seconds"></span>-->
+            <!--<div class="smalltext">Seconds</div>-->
+        <!--</div>-->
+    <!--</div>-->
 </div>
 
 <!--<div class="container" style="width: 650px;">-->

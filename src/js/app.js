@@ -184,6 +184,7 @@ App = {
             $('#bidForm').hide();
             $('#earlySettleButton').hide();
             $('#settleButton').hide();
+            $('#timeForm').hide();
 
             if(App.account === App.judgeAddress) {
 
@@ -191,6 +192,7 @@ App = {
         } else if(App.outcome === 2) {
             $('#bidForm').hide();
             $('#earlySettleButton').hide();
+            $('#timeForm').hide();
 
             if((App.account === App.judgeAddress || App.account === App.sellerAddress) && App.contractBalance > 0) {
                 $('#settleButton').show()

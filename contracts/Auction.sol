@@ -100,5 +100,7 @@ contract Auction {
     function setCurrentTime(uint _currentTime) public {
         require(_currentTime > currentTime, "Time can only be wind forward.");
         currentTime = _currentTime;
+
+        refreshOutcome();
     }
 }

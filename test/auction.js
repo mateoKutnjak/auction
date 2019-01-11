@@ -39,11 +39,28 @@ contract("Auction", function(accounts) {
         });
     });
 
-    it('check early settle without highest bidder', function() {
+    it('check winding time forward', function() {
+        var newTime = 1;
         return Auction.deployed().then(function (instance) {
             auctionInstance = instance;
-            return auctionInstance.settleEarly({from: other});
-        }).then(function(result) {
+            return auctionInstance.setCurrentTime(newTime, {from: other});
+        }).then(function() {
+            return auctionInstance.currentTime();
+        }).then(function(_currentTime) {
+            assert.equal(_currentTime.toNumber(), newTime);
+        });
+    });
+
+    it('check winding time backwards', function() {
+        var firstTime = 10;
+        var secondTime = 9;
+
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.setCurrentTime(firstTime, {from: other});
+        }).then(function() {
+            return auctionInstance.setCurrentTime(secondTime, {from: other});
+        }).then(assert.fail).catch(function(error) {
             assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
         });
     });
@@ -51,8 +68,28 @@ contract("Auction", function(accounts) {
     it('check early settle without highest bidder', function() {
         return Auction.deployed().then(function (instance) {
             auctionInstance = instance;
+            return auctionInstance.settleEarly({from: seller});
+        }).then(assert.fail).catch(function(error) {
+            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
+        });
+    });
+
+    it('check early settle without highest bidder from seller', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.settleEarly({from: seller})
+        }).then(assert.fail).catch(function(error) {
+            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
+        });
+    });
+
+    it('check early settle with highest bidder from non-seller', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
             return auctionInstance.bid({from: other, gas: 300000, value: 1});
-        }).then(function(result) {
+        }).then(function() {
+            return auctionInstance.settleEarly({from: other});
+        }).then(assert.fail).catch(function(error) {
             assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
         });
     });
@@ -65,6 +102,48 @@ contract("Auction", function(accounts) {
             assert(error.message.indexOf('revert') >= 0, "error message must contain revert");
         });
     });
+
+    it('check first bid equal to initial price', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price});
+        }).then(assert.fail).catch(function(error) {
+            assert(error, null, "error message must contain revert");
+        });
+    });
+
+    it('check bid bellow initial price', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price-1});
+        }).then(assert.fail).catch(function(error) {
+            assert(error.message.indexOf('revert') >= 0, "error message must contain revert");
+        });
+    });
+
+    it('check bid above or equalt to minimal increment value', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price});
+        }).then(function() {
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price + minimum_price_increment})
+        }).then(assert.fail).catch(function(error) {
+            assert(error, null, "error message must contain revert");
+        });
+    });
+
+    it('check bid bellow minimal increment value', function() {
+        return Auction.deployed().then(function (instance) {
+            auctionInstance = instance;
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price});
+        }).then(function() {
+            return auctionInstance.bid({from: other, gas: 300000, value: initial_price + minimum_price_increment - 1})
+        }).then(assert.fail).catch(function(error) {
+            assert(error.message.indexOf('revert') >= 0, "error message must contain revert");
+        });
+    });
+
+
 
     //
     // it("it initializes the candidates with the correct values", function() {

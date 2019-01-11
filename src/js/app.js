@@ -166,6 +166,8 @@ App = {
 
             App.refreshElements();
 
+            $('#timePeriod').html(App.currentTime + "/" + App.biddingPeriodSeconds);
+
             loader.hide();
         });
     },

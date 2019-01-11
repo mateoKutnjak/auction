@@ -85,7 +85,7 @@
         }
 
         .card {
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.6);
             transition: 0.3s;
             width: 50%;
             margin-top: 10px;
@@ -95,7 +95,7 @@
         }
 
         .card:hover {
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
         }
 
         @media (max-width: 600px) {
@@ -167,7 +167,7 @@
 <!--</p>-->
 
 <div class="row">
-    <div class="card">
+    <div class="card" style="margin: auto">
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <ul class="nav navbar-nav navbar-left">
@@ -202,33 +202,42 @@
 
         <label id="outcome" class="label-info col-lg-12"></label>
 
-        <div class="column2" style="width: 35%" align="right">
+        <div>
             <ul>
-                <li><label href="#" class="glyphicon glyphicon-time"></label></li>
-                <hr>
-                <li><label href="#">Highest bid</label></li>
-                <li><label href="#">Highest bidder</label></li>
-                <hr>
-                <li><label href="#">Initial price</label></li>
-                <li><label href="#">Minimum price increment</label></li>
-                <hr>
-                <li><label href="#">Seller</label></li>
-                <li><label href="#">Judge</label></li>
+                <li>
+                    <label class="col-md-4 glyphicon glyphicon-time" style="text-align: right;"></label>
+                    <label class="col-md-8" style="align-items: start" id="timePeriod"></label>
+                </li>
             </ul>
-        </div>
-        <!--<a class="navbar-right glyphicon glyphicon-list-alt"></a>-->
-        <div class="column2" style="width: 65%" align="left">
-            <ul style="align-items: start">
-                <li><label id="timePeriod"></label></li>
-                <hr>
-                <li><label id="currentHighestBid"></label></li>
-                <li><label id="currentHighestBidderAddress"></label></li>
-                <hr>
-                <li><label id="initialPrice"></label></li>
-                <li><label id="minimumPriceIncrement"></label></li>
-                <hr>
-                <li><label id="sellerAddress"></label></li>
-                <li><label id="judgeAddress"></label></li>
+            <ul>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Highest bid</label>
+                    <label class="col-md-8" style="align-items: start" id="currentHighestBid"></label>
+                </li>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Highest bidder</label>
+                    <label class="col-md-8" style="align-items: start" id="currentHighestBidderAddress"></label>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Initial price</label>
+                    <label class="col-md-8" style="align-items: start" id="initialPrice"></label>
+                </li>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Minimum price increment</label>
+                    <label class="col-md-8" style="align-items: start" id="minimumPriceIncrement"></label>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Seller</label>
+                    <label class="col-md-8" style="align-items: start" id="sellerAddress"></label>
+                </li>
+                <li>
+                    <label class="col-md-4" style="text-align: right;">Judge</label>
+                    <label class="col-md-8" style="align-items: start" id="judgeAddress"></label>
+                </li>
             </ul>
         </div>
 

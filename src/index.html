@@ -25,7 +25,7 @@
         .column2 {
             float: left;
             width: 50%;
-            padding: 50px;
+            padding: 10px;
             margin: auto;
         }
 
@@ -56,18 +56,22 @@
         .dropdown-menu {
             min-width: 300px;
         }
+
         .dropdown-menu.columns-2 {
             min-width: 300px;
         }
+
         .dropdown-menu li a {
             padding: 5px 15px;
             font-weight: 300;
         }
+
         .multi-column-dropdown {
             list-style: none;
             margin: 0px;
             padding: 0px;
         }
+
         .multi-column-dropdown li a {
             display: block;
             clear: both;
@@ -76,17 +80,22 @@
             white-space: normal;
         }
 
+        ul {
+            list-style-type: none;
+        }
+
         .card {
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.6);
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
             transition: 0.3s;
-            width: 33.33%;
+            width: 50%;
             margin-top: 10px;
             margin-left: 10px;
+            margin-right: 10px;
             padding: 5px;
         }
 
         .card:hover {
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
         }
 
         @media (max-width: 600px) {
@@ -145,16 +154,16 @@
 <div class="loader" id="loader"></div>
 
 <!--<p>-->
-    <!--<label for="accountAddress">-->
-        <!--<span>Logged in as: </span>-->
-        <!--<small id="accountAddress"></small>-->
-    <!--</label>-->
+<!--<label for="accountAddress">-->
+<!--<span>Logged in as: </span>-->
+<!--<small id="accountAddress"></small>-->
+<!--</label>-->
 <!--</p>-->
 <!--<p>-->
-    <!--<label for="accountBalance">-->
-        <!--<span>With balance: </span>-->
-        <!--<small id="accountBalance"></small>-->
-    <!--</label>-->
+<!--<label for="accountBalance">-->
+<!--<span>With balance: </span>-->
+<!--<small id="accountBalance"></small>-->
+<!--</label>-->
 <!--</p>-->
 
 <div class="row">
@@ -162,116 +171,93 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <ul class="nav navbar-nav navbar-left">
-                    <li>
-                        <a href="#" class="dropdown-toggle glyphicon glyphicon-time"></a>
-                    </li>
-                    <li>
-                        <a id="timePeriod"></a>
+                    <li class="dropdown">
+                        <a>Contract</a>
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                    <a href="#" class="dropdown-toggle glyphicon glyphicon-menu-hamburger" data-toggle="dropdown"></a>
+                        <a href="#" class="dropdown-toggle glyphicon glyphicon-menu-hamburger"
+                           data-toggle="dropdown"></a>
+                        <ul class="dropdown-menu">
+                            <div>
+                                <div class="col-sm-2">
+                                    <ul class="multi-column-dropdown">
+                                        <li><a href="#">Address</a></li>
+                                        <li><a href="#">Balance</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-sm-2">
+                                    <ul class="multi-column-dropdown">
+                                        <li><a href="#" id="contractAddress"></a></li>
+                                        <li><a href="#" id="contractBalance"></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </ul>
                     </li>
                 </ul>
             </div>
         </nav>
-        <a class="navbar-right glyphicon glyphicon-list-alt"></a>
 
-        <p>
-            <label for="contractAddress">
-                <span class="label-info">Contract address: </span>
-                <small id="contractAddress"></small>
-            </label>
-        </p>
-        <p>
-            <label for="contractBalance">
-                <span class="label-info">Contract balance: </span>
-                <small id="contractBalance"></small>
-            </label>
-        </p>
-        <p>
-            <label for="initialPrice">
-                <span class="label-info">Initial price: </span>
-                <small id="initialPrice"></small>
-            </label>
-        </p>
-        <p>
-            <label for="minimumPriceIncrement">
-                <span class="label-info">Minimum increment: </span>
-                <small id="minimumPriceIncrement"></small>
-            </label>
-        </p>
+        <label id="outcome" class="label-info col-lg-12"></label>
 
-    </div>
-    <div class="column3">
-        <h1 class="text-center">Participants</h1>
+        <div class="column2" style="width: 35%" align="right">
+            <ul>
+                <li><label href="#" class="glyphicon glyphicon-time"></label></li>
+                <hr>
+                <li><label href="#">Highest bid</label></li>
+                <li><label href="#">Highest bidder</label></li>
+                <hr>
+                <li><label href="#">Initial price</label></li>
+                <li><label href="#">Minimum price increment</label></li>
+                <hr>
+                <li><label href="#">Seller</label></li>
+                <li><label href="#">Judge</label></li>
+            </ul>
+        </div>
+        <!--<a class="navbar-right glyphicon glyphicon-list-alt"></a>-->
+        <div class="column2" style="width: 65%" align="left">
+            <ul style="align-items: start">
+                <li><label id="timePeriod"></label></li>
+                <hr>
+                <li><label id="currentHighestBid"></label></li>
+                <li><label id="currentHighestBidderAddress"></label></li>
+                <hr>
+                <li><label id="initialPrice"></label></li>
+                <li><label id="minimumPriceIncrement"></label></li>
+                <hr>
+                <li><label id="sellerAddress"></label></li>
+                <li><label id="judgeAddress"></label></li>
+            </ul>
+        </div>
 
-        <p>
-            <label for="sellerAddress">
-                <span class="label-info">Seller address: </span>
-                <small id="sellerAddress"></small>
-            </label>
-        </p>
-        <p>
-            <label for="judgeAddress">
-                <span class="label-info">Judge address: </span>
-                <small id="judgeAddress"></small>
-            </label>
-        </p>
-    </div>
+        <div class="row">
+            <div class="column2">
+                <form id="timeForm" onSubmit="App.changeTime()">
+                    <div class="form-group">
+                        <label for="inputTime">Change time</label>
+                        <input class="form-control" id="inputTime"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Change time</button>
+                </form>
+            </div>
+            <div class="column2">
+                <form id="bidForm" onSubmit="App.createBid()">
+                    <div class="form-group">
+                        <label for="bidForm">Place bid</label>
+                        <input class="form-control" id="inputBid"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Place bid</button>
+                </form>
+            </div>
 
-    <div class="column3">
-        <h1 class="text-center">Bidding info</h1>
+            <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
+            <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
+        </div>
 
-        <p>
-            <label for="lastBidTimestamp">
-                <span class="label-info">Last bid occured: </span>
-                <small id="lastBidTimestamp"></small>
-            </label>
-        </p>
-        <p>
-            <label for="currentHighestBid">
-                <span class="label-info">Highest bid</span>
-                <small id="currentHighestBid"></small>
-            </label>
-        </p>
-
-        <p>
-            <label for="currentHighestBidderAddress">
-                <span class="label-info">Highest bidder address</span>
-                <small id="currentHighestBidderAddress"></small>
-            </label>
-        </p>
     </div>
 </div>
-
-<label id="outcome" class="label-info col-lg-12"></label>
-
-<div class="row">
-    <div class="column2">
-        <form id="timeForm" onSubmit="App.changeTime()">
-            <div class="form-group">
-                <label for="inputTime">Change time</label>
-                <input class="form-control" id="inputTime"/>
-            </div>
-            <button type="submit" class="btn btn-primary">Change time</button>
-        </form>
-    </div>
-    <div class="column2">
-        <form id="bidForm" onSubmit="App.createBid()">
-            <div class="form-group">
-                <label for="bidForm">Place bid</label>
-                <input class="form-control" id="inputBid"/>
-            </div>
-            <button type="submit" class="btn btn-primary">Place bid</button>
-        </form>
-    </div>
-
-    <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
-    <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
-</div>
-
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

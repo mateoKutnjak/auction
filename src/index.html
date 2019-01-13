@@ -153,120 +153,127 @@
 
 <div class="loader" id="loader"></div>
 
-<!--<p>-->
-<!--<label for="accountAddress">-->
-<!--<span>Logged in as: </span>-->
-<!--<small id="accountAddress"></small>-->
-<!--</label>-->
-<!--</p>-->
-<!--<p>-->
-<!--<label for="accountBalance">-->
-<!--<span>With balance: </span>-->
-<!--<small id="accountBalance"></small>-->
-<!--</label>-->
-<!--</p>-->
+<ul>
+    <li>
+        <div class="card" style="margin: auto">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li class="dropdown">
+                            <a>Contract</a>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle glyphicon glyphicon-menu-hamburger"
+                               data-toggle="dropdown"></a>
+                            <ul class="dropdown-menu">
+                                <div>
+                                    <div class="col-sm-2">
+                                        <ul class="multi-column-dropdown">
+                                            <li><a href="#">Address</a></li>
+                                            <li><a href="#">Balance</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <ul class="multi-column-dropdown">
+                                            <li><a href="#" id="contractAddress"></a></li>
+                                            <li><a href="#" id="contractBalance"></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
 
-<div class="row">
-    <div class="card" style="margin: auto">
-        <nav class="navbar navbar-default">
-            <div class="container-fluid">
-                <ul class="nav navbar-nav navbar-left">
-                    <li class="dropdown">
-                        <a>Contract</a>
+            <label id="outcome" class="label-info col-lg-12"></label>
+
+            <div>
+                <ul>
+                    <li>
+                        <label class="col-md-4 glyphicon glyphicon-time" style="text-align: right;"></label>
+                        <label class="col-md-8" style="align-items: start" id="timePeriod"></label>
                     </li>
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle glyphicon glyphicon-menu-hamburger"
-                           data-toggle="dropdown"></a>
-                        <ul class="dropdown-menu">
-                            <div>
-                                <div class="col-sm-2">
-                                    <ul class="multi-column-dropdown">
-                                        <li><a href="#">Address</a></li>
-                                        <li><a href="#">Balance</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-sm-2">
-                                    <ul class="multi-column-dropdown">
-                                        <li><a href="#" id="contractAddress"></a></li>
-                                        <li><a href="#" id="contractBalance"></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </ul>
+                <ul>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Highest bid</label>
+                        <label class="col-md-8" style="align-items: start" id="currentHighestBid"></label>
+                    </li>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Highest bidder</label>
+                        <label class="col-md-8" style="align-items: start" id="currentHighestBidderAddress"></label>
+                    </li>
+                </ul>
+                <ul>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Initial price</label>
+                        <label class="col-md-8" style="align-items: start" id="initialPrice"></label>
+                    </li>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Minimum price increment</label>
+                        <label class="col-md-8" style="align-items: start" id="minimumPriceIncrement"></label>
+                    </li>
+                </ul>
+                <ul>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Seller</label>
+                        <label class="col-md-8" style="align-items: start" id="sellerAddress"></label>
+                    </li>
+                    <li>
+                        <label class="col-md-4" style="text-align: right;">Judge</label>
+                        <label class="col-md-8" style="align-items: start" id="judgeAddress"></label>
                     </li>
                 </ul>
             </div>
-        </nav>
 
-        <label id="outcome" class="label-info col-lg-12"></label>
+            <div class="row">
+                <div class="column2">
+                    <form id="timeForm" onSubmit="App.changeTime()">
+                        <div class="form-group">
+                            <label for="inputTime">Change time</label>
+                            <input class="form-control" id="inputTime"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change time</button>
+                    </form>
+                </div>
+                <div class="column2">
+                    <form id="bidForm" onSubmit="App.createBid()">
+                        <div class="form-group">
+                            <label for="bidForm">Place bid</label>
+                            <input class="form-control" id="inputBid"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Place bid</button>
+                    </form>
+                </div>
 
-        <div>
-            <ul>
-                <li>
-                    <label class="col-md-4 glyphicon glyphicon-time" style="text-align: right;"></label>
-                    <label class="col-md-8" style="align-items: start" id="timePeriod"></label>
-                </li>
-            </ul>
-            <ul>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Highest bid</label>
-                    <label class="col-md-8" style="align-items: start" id="currentHighestBid"></label>
-                </li>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Highest bidder</label>
-                    <label class="col-md-8" style="align-items: start" id="currentHighestBidderAddress"></label>
-                </li>
-            </ul>
-            <ul>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Initial price</label>
-                    <label class="col-md-8" style="align-items: start" id="initialPrice"></label>
-                </li>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Minimum price increment</label>
-                    <label class="col-md-8" style="align-items: start" id="minimumPriceIncrement"></label>
-                </li>
-            </ul>
-            <ul>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Seller</label>
-                    <label class="col-md-8" style="align-items: start" id="sellerAddress"></label>
-                </li>
-                <li>
-                    <label class="col-md-4" style="text-align: right;">Judge</label>
-                    <label class="col-md-8" style="align-items: start" id="judgeAddress"></label>
-                </li>
-            </ul>
-        </div>
-
-        <div class="row">
-            <div class="column2">
-                <form id="timeForm" onSubmit="App.changeTime()">
-                    <div class="form-group">
-                        <label for="inputTime">Change time</label>
-                        <input class="form-control" id="inputTime"/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Change time</button>
-                </form>
+                <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
+                <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
             </div>
-            <div class="column2">
-                <form id="bidForm" onSubmit="App.createBid()">
-                    <div class="form-group">
-                        <label for="bidForm">Place bid</label>
-                        <input class="form-control" id="inputBid"/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Place bid</button>
-                </form>
-            </div>
-
-            <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
-            <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
         </div>
-
-    </div>
-</div>
+    </li>
+    <li>
+        <div class="card" style="margin: auto">
+            <form onSubmit="App.createContract()">
+                <div class="form-group">
+                    <label class="col-lg-4" for="biddingPeriodInput">Bidding period</label>
+                    <input class="col-lg-8" type="number" id="biddingPeriodInput">
+                    <label class="col-lg-4" for="initialPriceInput">Initial price</label>
+                    <input class="col-lg-8" type="number" id="initialPriceInput">
+                    <label class="col-lg-4" for="minimumPriceIncrementInput">Minimum increment</label>
+                    <input class="col-lg-8" type="number" id="minimumPriceIncrementInput">
+                    <label class="col-lg-4" for="sellersInput">Seller</label>
+                    <select id="sellersInput" class="col-lg-8"></select>
+                    <label class="col-lg-4" for="judgesInput">Judge</label>
+                    <select id="judgesInput" class="col-lg-8"></select>
+                    <input value="Deploy" type="submit" class="btn btn-primary" onclick="App.createContract()"/>
+                </div>
+            </form>
+        </div>
+    </li>
+</ul>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

@@ -2,6 +2,18 @@ App = {
     web3Provider: null,
     contracts: {},
     account: '0x0',
+    accounts: [
+        '0x8068604E5292016a8e8e6a4f7C28cB4b5C2921FD',
+        '0x9B3Aba50081F6e44582dbE5fFD43634Be35EA78f',
+        '0xceE3FBc3e9455Ec4243460AfC31e6b16B205445a',
+        '0x7Db87242de966313002c019b28f370c7B823FE8f',
+        '0xBC8E25B117Afe83DE7fE87B4d181Efe3CBF3f07C',
+        '0xb5945f72E3217C401b116785dDf39937b3cC0F56',
+        '0xdE8D5d91FA641baCB508C49297A315b15C295A59',
+        '0x321dBD39132174d018Fa93601d2E9eaD0695FBe4',
+        '0x46D940b954646995bB1244557B5b063FE193cDF8',
+        '0xA1b10912CbF616Df98f856Aca66068672cb8Dc6B'
+    ],
 
     contractBalance: 0,
     initialPrice: 0,
@@ -15,6 +27,9 @@ App = {
     biddingPeriodSeconds: 0,
 
     init: function () {
+        // var version = web3.version.api;
+        // console.log(version); // "0.2.0"
+
         return App.initWeb3();
     },
 
@@ -26,6 +41,7 @@ App = {
             App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
             web3 = new Web3(App.web3Provider);
         }
+
         return App.initContract();
     },
 
@@ -55,6 +71,42 @@ App = {
         });
     },
 
+    createContract: function() {
+        var _biddinPeriod = parseInt($("#biddingPeriodInput").val());
+        var _initialPriceInput = parseInt($("#initialPriceInput").val());
+        var _minimalPriceIncrementInput = parseInt($("#minimumPriceIncrementInput").val());
+        var _seller = $("#sellersInput").find(":selected").text();
+        var _judge = $("#judgesInput").find(":selected").text();
+
+        $.getJSON("Auction.json", function (auction) {
+            var contract = web3.eth.contract(auction['abi']);
+
+            App.newAuction = contract.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput, {data: auction['bytecode'], from: App.account, gas: 3000000}, function(err, instance) {
+                debugger;
+                if(!err) {
+                    // NOTE: The callback will fire twice!
+                    // Once the contract has the transactionHash property set and once its deployed on an address.
+                    // e.g. check tx hash on the first call (transaction send)
+                    if(!instance.address) {
+                        console.log(instance.transactionHash) // The hash of the transaction, which deploys the contract
+
+                        // check address on the second call (contract deployed)
+                    } else {
+                        console.log(instance.address) // the contract address
+                    }
+                    // Note that the returned "myContractReturned" === "myContract",
+                    // so the returned "myContractReturned" object will also get the address set.
+                }
+            });
+
+            // App.newAuction.deployed().then(function(instance) {
+            //     debugger;
+            //    console.log(instance);
+            // });
+
+        });
+    },
+
     render: function () {
         var auctionInstance;
         var loader = $("#loader");
@@ -65,6 +117,11 @@ App = {
 
         loader.show();
 
+        $.each(App.accounts, function(index, value) {
+            $('#sellersInput').append($('<option>').text(value).attr('value', index));
+            $('#judgesInput').append($('<option>').text(value).attr('value', index));
+        });
+
         // Load account data
         web3.eth.getCoinbase(function (err, account) {
             if (err === null) {
@@ -74,6 +131,11 @@ App = {
                 web3.eth.getBalance(account, function (err, balance) {
                     $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
                 });
+
+                $("#sellersInput").append(
+                    new Option(App.account, App.account));
+                $("#judgesInput").append(
+                    new Option(App.account, App.account));
             }
         });
 

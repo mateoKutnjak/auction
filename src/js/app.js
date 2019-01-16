@@ -28,8 +28,6 @@ App = {
     biddingPeriodSeconds: 0,
 
     init: function () {
-        // var version = web3.version.api;
-        // console.log(version); // "0.2.0"
 
         return App.initWeb3();
     },
@@ -42,6 +40,9 @@ App = {
             App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
             web3 = new Web3(App.web3Provider);
         }
+
+        var version = web3.version.api;
+        console.log(version); // "0.2.0"
 
         return App.initContract();
     },
@@ -80,59 +81,28 @@ App = {
         var _seller = $("#sellersInput").find(":selected").text();
         var _judge = $("#judgesInput").find(":selected").text();
 
+        var contract = web3.eth.contract(App.auctionData.abi).new(
+            _seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput, {data: App.auctionData['bytecode'], from: App.account, gas: 4712388, gasPrice: 5}, function(err,_contract){
 
-        debugger;
-        var contract = web3.eth.contract(App.auctionData.abi);
+                alert(err);
+                alert(_contract);
 
-        var contractInstance = contract.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput, {data: App.auctionData['bytecode'], from: App.account, gas: 4712388, gasPrice: 5}, function(err,_contract){
-            debugger;
-            alert(err);
-            alert(_contract);
-            if(err) {
+                if(err) {
                     console.log(err);
                     return
                 }
                 if(_contract.address) {
                     console.log("MyContract deployed at address :" + _contract.address)
+
+                    _contract.deployed().then(function(err, res) {
+                        console.log(err);
+                        console.log(res);
+                    });
                 } else {
                     console.log("MyContract is waiting to be mined at transaction hash:" + _contract.transactionHash);
                 }
+                debugger;
         });
-
-        debugger;
-
-        contractInstance.deployed().then(function(err, res) {
-            debugger;
-            console.log(err);
-            console.log(res);
-        });
-
-
-                // $.getJSON("Auction.json", function (auction) {
-        //     var contract = web3.eth.contract(auction['abi']);
-        //     App.newAuction = contract.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput, {data: auction['bytecode'], from: App.account, gas: 30000000, value: 0.1}, function(err, instance) {
-        //         if(!err) {
-        //             // NOTE: The callback will fire twice!
-        //             // Once the contract has the transactionHash property set and once its deployed on an address.
-        //             // e.g. check tx hash on the first call (transaction send)
-        //             if(!instance.address) {
-        //                 console.log(instance.transactionHash) // The hash of the transaction, which deploys the contract
-        //
-        //                 // check address on the second call (contract deployed)
-        //             } else {
-        //                 console.log(instance.address) // the contract address
-        //             }
-        //             // Note that the returned "myContractReturned" === "myContract",
-        //             // so the returned "myContractReturned" object will also get the address set.
-        //         }
-        //     });
-
-            // App.newAuction.deployed().then(function(instance) {
-            //     debugger;
-            //    console.log(instance);
-            // });
-
-        // });
     },
 
     render: function () {

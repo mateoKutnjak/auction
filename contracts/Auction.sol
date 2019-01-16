@@ -22,7 +22,7 @@ contract Auction {
     uint public lastBidTimestamp;
     uint public minimumPriceIncrement;
 
-    constructor(address _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public {
+    constructor(address payable _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public payable {
         initialPrice = _initialPrice;
         biddingPeriod = _biddingPeriodSeconds;
         minimumPriceIncrement = _minimumPriceIncrement;
@@ -33,6 +33,8 @@ contract Auction {
 
         if (sellerAddress == address(0)) {
             sellerAddress = msg.sender;
+        } else {
+            sellerAddress = _sellerAddress;
         }
         judgeAddress = _judgeAddress;
 

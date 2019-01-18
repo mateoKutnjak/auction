@@ -1,6 +1,7 @@
 App = {
     web3Provider: null,
     contracts: {},
+    newContract: null,
     auctionData: null,
     account: '0x0',
     accounts: [
@@ -75,33 +76,43 @@ App = {
     },
 
     createContract: function() {
+
         var _biddinPeriod = parseInt($("#biddingPeriodInput").val());
         var _initialPriceInput = parseInt($("#initialPriceInput").val());
         var _minimalPriceIncrementInput = parseInt($("#minimumPriceIncrementInput").val());
         var _seller = $("#sellersInput").find(":selected").text();
         var _judge = $("#judgesInput").find(":selected").text();
 
-        var contract = web3.eth.contract(App.auctionData.abi).new(
-            _seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput, {data: App.auctionData['bytecode'], from: App.account, gas: 4712388, gasPrice: 5}, function(err,_contract){
+        var Auction = web3.eth.contract(App.auctionData['abi']);
 
-                alert(err);
-                alert(_contract);
-
-                if(err) {
+        Auction.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput,
+            {from: App.account, data: App.auctionData['bytecode'], gas: 4712388, gasPrice: 100000000000, value: 1000000000000},
+            function(err, newContract) {
+                if (err) {
                     console.log(err);
-                    return
+                    return;
                 }
-                if(_contract.address) {
-                    console.log("MyContract deployed at address :" + _contract.address)
 
-                    _contract.deployed().then(function(err, res) {
-                        console.log(err);
-                        console.log(res);
-                    });
+                if (!newContract.address) {
+                    console.log("Contract transaction send: TransactionHash: " + newContract.transactionHash + " waiting to be mined...");
                 } else {
-                    console.log("MyContract is waiting to be mined at transaction hash:" + _contract.transactionHash);
+                    console.log("Contract mined! Address: " + newContract.address);
+
+                    App.newContract = newContract;
+
+                    return App.f();
                 }
-                debugger;
+        });
+    },
+
+    f: function() {
+        App.newContract.initialPrice(function(err, res) {
+            console.log(err);
+            console.log(res.toNumber());
+        });
+
+        App.newContract.judgeAddress(function(err, res) {
+            console.log(res);
         });
     },
 
@@ -136,6 +147,8 @@ App = {
                     new Option(App.account, App.account));
             }
         });
+
+        console.log(App.contracts.Auction);
 
         // Load contract data
         App.contracts.Auction.deployed().then(function (instance) {
@@ -369,4 +382,10 @@ $(function () {
     $(window).load(function () {
         App.init();
     });
+});
+
+$('#newContractButton').click(function(e) {
+    e.preventDefault();
+
+    App.createContract();
 });

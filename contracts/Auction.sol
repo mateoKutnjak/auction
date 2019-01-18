@@ -10,7 +10,7 @@ contract Auction {
 
     Outcome public outcome;
 
-    address public judgeAddress;
+    address payable public judgeAddress;
     address payable public sellerAddress;
     address payable public currentHighestBidderAddress;
 
@@ -22,7 +22,7 @@ contract Auction {
     uint public lastBidTimestamp;
     uint public minimumPriceIncrement;
 
-    constructor(address payable _sellerAddress, address _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public payable {
+    constructor(address payable _sellerAddress, address payable _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public payable {
         initialPrice = _initialPrice;
         biddingPeriod = _biddingPeriodSeconds;
         minimumPriceIncrement = _minimumPriceIncrement;

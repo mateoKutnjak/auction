@@ -256,7 +256,7 @@
     </li>
     <li>
         <div class="card" style="margin: auto">
-            <form onSubmit="App.createContract()">
+            <!--<form>-->
                 <div class="form-group">
                     <label class="col-lg-4" for="biddingPeriodInput">Bidding period</label>
                     <input class="col-lg-8" type="number" id="biddingPeriodInput">
@@ -268,11 +268,15 @@
                     <select id="sellersInput" class="col-lg-8"></select>
                     <label class="col-lg-4" for="judgesInput">Judge</label>
                     <select id="judgesInput" class="col-lg-8"></select>
-                    <input value="Deploy" type="submit" class="btn btn-primary" onclick="App.createContract()"/>
+                    <input value="Deploy" class="btn btn-primary" id="newContractButton"/>
                 </div>
-            </form>
+            <!--</form>-->
         </div>
     </li>
+</ul>
+
+<ul id="contractList">
+
 </ul>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

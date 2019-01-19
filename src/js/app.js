@@ -110,6 +110,10 @@ App = {
         var _seller = $("#sellersInput").find(":selected").text();
         var _judge = $("#judgesInput").find(":selected").text();
 
+        $("#biddingPeriodInput").val('');
+        $("#initialPriceInput").val('');
+        $("#minimumPriceIncrementInput").val('');
+
         var Auction = web3.eth.contract(App.auctionData['abi']);
 
         Auction.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput,
@@ -142,7 +146,7 @@ App = {
             '        (<span class="badge badge-light" id="newContractBalance' + index + '"></span>)\n' +
             '    </div>\n' +
             '\n' +
-            '    <div class="alert alert-success container" id="outcome' + index + '"></div>\n' +
+            '    <div class="alert alert-success container" id="newOutcome' + index + '"></div>\n' +
             '\n' +
             '    <div class="container">\n' +
             '        <table class="table-condensed table">\n' +
@@ -219,8 +223,6 @@ App = {
         var auctionInstance;
         var loader = $('#loader');
 
-        debugger;
-
         if(typeof position === "undefined") {
             index = App.activeContracts.length-1;
             $('#newContractList').append(App.htmlContractElement(index));
@@ -283,7 +285,7 @@ App = {
             });
 
             contractInstance.currentHighestBid(function (err, res) {
-                var currentHighestBid = res.toNumber();
+                var currentHighestBid = web3.fromWei(res.toNumber(), 'ether');
 
                 $("#newCurrentHighestBid" + index).html(currentHighestBid);
             });
@@ -294,6 +296,18 @@ App = {
                 $("#newMinimumPriceIncrement" + index).html(minimumPriceIncrement);
 
                 loader.hide();
+            });
+
+            contractInstance.outcome(function(err, res) {
+                var outcomeMessage = null;
+
+                switch (res.toNumber()) {
+                    case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
+                    case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
+                    case 2: outcomeMessage = "Auction has finished successfully."; break;
+                }
+
+                $('#newOutcome' + index).html(outcomeMessage);
             });
         } else if(type === App.HARDCODED) {
             contractInstance.deployed().then(function (instance) {
@@ -475,7 +489,8 @@ App = {
                 console.error(err);
             });
         } else if(type === App.DYNAMIC) {
-            contractInstance.setCurrentTime(inputTime, {from: App.myAccountAddress, gas: 30000}, function(err, res) {
+            contractInstance.setCurrentTime(inputTime, {from: App.myAccountAddress}, function(err, res) {
+                debugger;
                 if(!err) {
                     App.renderContract(index);
                 }

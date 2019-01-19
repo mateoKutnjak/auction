@@ -1180,7 +1180,7 @@ function fromByteArray (uint8) {
 
       r <<= 4;
 
-      // 'a' - 'f'
+      // 'a' - 'renderContract'
       if (c >= 49 && c <= 54) {
         r |= c - 49 + 0xa;
 
@@ -5260,7 +5260,7 @@ Buffer.prototype.write = function write (string, offset, length, encoding) {
         return latin1Write(this, string, offset, length)
 
       case 'base64':
-        // Warning: maxLength not taken into account in base64Write
+        // Warning: maxLength not taken into myAccountAddress in base64Write
         return base64Write(this, string, offset, length)
 
       case 'ucs2':

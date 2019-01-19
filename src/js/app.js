@@ -1,10 +1,9 @@
 App = {
     web3Provider: null,
-    contracts: {},
-    newContract: null,
+    activeContracts: [],
     auctionData: null,
-    account: '0x0',
-    accounts: [
+    myAccountAddress: '0x0',
+    allAccountsAddresses: [
         '0x8068604E5292016a8e8e6a4f7C28cB4b5C2921FD',
         '0x9B3Aba50081F6e44582dbE5fFD43634Be35EA78f',
         '0xceE3FBc3e9455Ec4243460AfC31e6b16B205445a',
@@ -28,12 +27,21 @@ App = {
     currentHighestBudderAddress: '0x0',
     biddingPeriodSeconds: 0,
 
-    init: function () {
+    HARDCODED: "hardcoded",
+    DYNAMIC: "dynamic",
 
+    init: function () {
         return App.initWeb3();
     },
 
     initWeb3: function () {
+        $("#loader").show();
+
+        $.each(App.allAccountsAddresses, function(index, value) {
+            $('#sellersInput').append($('<option>').text(value).attr('value', index));
+            $('#judgesInput').append($('<option>').text(value).attr('value', index));
+        });
+
         if (typeof web3 !== 'undefined') {
             App.web3Provider = web3.currentProvider;
             web3 = new Web3(web3.currentProvider);
@@ -49,31 +57,50 @@ App = {
     },
 
     initContract: function () {
+        web3.eth.getCoinbase(function (err, account) {
+            if (err === null) {
+                App.myAccountAddress = account;
+                $("#accountAddress").html(account);
+
+                web3.eth.getBalance(account, function (err, balance) {
+                    $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
+                });
+                // $("#sellersInput").append(
+                //     new Option(App.myAccountAddress, App.myAccountAddress));
+                // $("#judgesInput").append(
+                //     new Option(App.myAccountAddress, App.myAccountAddress));
+            }
+        });
+
         $.getJSON("Auction.json", function (auction) {
             App.auctionData = auction;
-            App.contracts.Auction = TruffleContract(auction);
-            App.contracts.Auction.setProvider(App.web3Provider);
+
+            var truffleContract = TruffleContract(auction);
+            truffleContract.setProvider(App.web3Provider);
+
+            App.activeContracts.push({type: App.HARDCODED, contract: truffleContract});
+
             // App.listenForEvents();
-            return App.render();
+            return App.renderContract();
         });
     },
 
     // Listen for events emitted from the contract
-    listenForEvents: function () {
-        App.contracts.Election.deployed().then(function (instance) {
-            // Restart Chrome if you are unable to receive this event
-            // This is a known issue with Metamask
-            // https://github.com/MetaMask/metamask-extension/issues/2393
-            instance.votedEvent({}, {
-                fromBlock: 0,
-                toBlock: 'latest'
-            }).watch(function (error, event) {
-                console.log("event triggered", event)
-                // Reload when a new vote is recorded
-                App.render();
-            });
-        });
-    },
+    // listenForEvents: function () {
+        // App.contracts.Election.deployed().then(function (instance) {
+        //     // Restart Chrome if you are unable to receive this event
+        //     // This is a known issue with Metamask
+        //     // https://github.com/MetaMask/metamask-extension/issues/2393
+        //     instance.votedEvent({}, {
+        //         fromBlock: 0,
+        //         toBlock: 'latest'
+        //     }).watch(function (error, event) {
+        //         console.log("event triggered", event)
+        //         // Reload when a new vote is recorded
+        //         App.render();
+        //     });
+        // });
+    // },
 
     createContract: function() {
 
@@ -86,7 +113,7 @@ App = {
         var Auction = web3.eth.contract(App.auctionData['abi']);
 
         Auction.new(_seller, _judge, _initialPriceInput, _biddinPeriod, _minimalPriceIncrementInput,
-            {from: App.account, data: App.auctionData['bytecode'], gas: 4712388, gasPrice: 100000000000, value: 1000000000000},
+            {from: App.myAccountAddress, data: App.auctionData['bytecode'], gas: 4712388, gasPrice: 100000000000},
             function(err, newContract) {
                 if (err) {
                     console.log(err);
@@ -98,151 +125,270 @@ App = {
                 } else {
                     console.log("Contract mined! Address: " + newContract.address);
 
-                    App.newContract = newContract;
+                    App.activeContracts.push({type: App.DYNAMIC, contract: newContract});
 
-                    return App.f();
+                    return App.renderContract();
                 }
         });
     },
 
-    f: function() {
-        App.newContract.initialPrice(function(err, res) {
-            console.log(err);
-            console.log(res.toNumber());
-        });
-
-        App.newContract.judgeAddress(function(err, res) {
-            console.log(res);
-        });
+    htmlContractElement: function(index) {
+        return '<li id="contract' + index + '">' +
+            '<div class="container text-center">\n' +
+            '\n' +
+            '    <div class="btn">\n' +
+            '        <h3>Contract</h3>\n' +
+            '        <span class="badge badge-light" id="newContractAddress' + index + '"></span>\n' +
+            '        (<span class="badge badge-light" id="newContractBalance' + index + '"></span>)\n' +
+            '    </div>\n' +
+            '\n' +
+            '    <div class="alert alert-success container" id="outcome' + index + '"></div>\n' +
+            '\n' +
+            '    <div class="container">\n' +
+            '        <table class="table-condensed table">\n' +
+            '            <tr class="thead-light">\n' +
+            '                <th>Current time</th>\n' +
+            '                <th>Initial price</th>\n' +
+            '                <th>Minimal increment</th>\n' +
+            '                <th>Highest bid</th>\n' +
+            '            </tr>\n' +
+            '            <tr>\n' +
+            '                <td id="newTimePeriod' + index + '"></td>\n' +
+            '                <td id="newInitialPrice' + index + '"></td>\n' +
+            '                <td id="newMinimumPriceIncrement' + index + '"></td>\n' +
+            '                <td id="newCurrentHighestBid' + index + '"></td>\n' +
+            '            </tr>\n' +
+            '        </table>\n' +
+            '    </div>\n' +
+            '\n' +
+            '    <div class="container">\n' +
+            '        <table class="table">\n' +
+            '            <tr class="thead-light">\n' +
+            '                <th>Role</th>\n' +
+            '                <th>Address</th>\n' +
+            '            </tr>\n' +
+            '            <tr>\n' +
+            '                <td>Seller</td>\n' +
+            '                <td id="newSellerAddress' + index + '"></td>\n' +
+            '            </tr>\n' +
+            '            <tr>\n' +
+            '                <td>Judge</td>\n' +
+            '                <td id="newJudgeAddress' + index + '"></td>\n' +
+            '            </tr>\n' +
+            '            <tr>\n' +
+            '                <td>Highest bidder</td>\n' +
+            '                <td id="newCurrentHighestBidderAddress' + index + '"></td>\n' +
+            '            </tr>\n' +
+            '        </table>\n' +
+            '    </div>\n' +
+            '\n' +
+            '    <br>\n' +
+            '\n' +
+            '    <div class="row">\n' +
+            '        <div class="col-md">\n' +
+            '            <form>\n' +
+            '                <div class="form-group">\n' +
+            '                    <label for="newInputBid">Place bid</label>\n' +
+            '                    <input class="form-control" type="number" id="newInputBid' + index + '">\n' +
+            '                </div>\n' +
+            '            </form>\n' +
+            '            <button type="submit" class="btn btn-primary" onclick="App.createBid(' + index + ')"">Place bid</button>\n' +
+            '        </div>\n' +
+            '        <div class="col-md">\n' +
+            '            <form>\n' +
+            '                <div class="form-group">\n' +
+            '                    <label for="newInputTime">Change time</label>\n' +
+            '                    <input class="form-control" type="number" id="newInputTime' + index + '">\n' +
+            '                </div>\n' +
+            '            </form>\n' +
+            '            <button type="submit" class="btn btn-primary" onclick="App.changeTime(' + index + ')">Change time</button>\n' +
+            '        </div>\n' +
+            '    </div>\n' +
+            '\n' +
+            '    <div class="container">\n' +
+            '        <button class="btn btn-danger" id="newEarlySettleButton" onclick="App.earlySettle(' + index + ')">Early settle</button>\n' +
+            '        <button class="btn btn-warning" id="newSettleButton" onclick="App.settle(' + index + ')">Settle</button>\n' +
+            '    </div>\n' +
+            '</div>' +
+            '</li>' +
+            '<hr>';
     },
 
-    render: function () {
+    renderContract: function(position) {
+        var index;
         var auctionInstance;
-        var loader = $("#loader");
+        var loader = $('#loader');
 
-        var bidForm = $('#bidForm');
-        var settleButton = $('#settleButton');
-        var earlySettleButton = $('#earlySettleButton');
+        debugger;
 
-        loader.show();
+        if(typeof position === "undefined") {
+            index = App.activeContracts.length-1;
+            $('#newContractList').append(App.htmlContractElement(index));
+        } else {
+            index = position;
+            $("#contract" + position).html(App.htmlContractElement(index));
+        }
 
-        $.each(App.accounts, function(index, value) {
-            $('#sellersInput').append($('<option>').text(value).attr('value', index));
-            $('#judgesInput').append($('<option>').text(value).attr('value', index));
-        });
+        var contractInstance = App.activeContracts[index].contract;
+        var type = App.activeContracts[index].type;
 
-        // Load account data
-        web3.eth.getCoinbase(function (err, account) {
-            if (err === null) {
-                App.account = account;
-                $("#accountAddress").html(account);
+        var biddingPeriod = null;
+        var currentTime = null;
 
-                web3.eth.getBalance(account, function (err, balance) {
-                    $('#accountBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
-                });
+        if(type === App.DYNAMIC) {
 
-                $("#sellersInput").append(
-                    new Option(App.account, App.account));
-                $("#judgesInput").append(
-                    new Option(App.account, App.account));
-            }
-        });
+            $('#newContractAddress' + index).html(contractInstance.address);
 
-        console.log(App.contracts.Auction);
-
-        // Load contract data
-        App.contracts.Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-
-            web3.eth.getBalance(instance.address, function (err, balance) {
-                if(err == null) {
-                    App.contractBalance = web3.fromWei(balance.toNumber(), 'ether');
-                    $('#contractBalance').html(web3.fromWei(balance.toNumber(), 'ether'));
+            web3.eth.getBalance(contractInstance.address, function (err, _balance) {
+                if (err == null) {
+                    var balance = web3.fromWei(_balance.toNumber(), 'ether');
+                    $('#newContractBalance' + index).html(balance);
                 } else {
                     console.log(err);
                 }
             });
 
-            $('#contractAddress').html(instance.address);
+            contractInstance.initialPrice(function (err, res) {
+                var initialPrice = res.toNumber();
 
-            return auctionInstance.initialPrice();
+                $("#newInitialPrice" + index).html(initialPrice);
+            });
 
-        }).then(function (_initialPrice) {
-            App.initialPrice = _initialPrice.toNumber();
+            contractInstance.judgeAddress(function (err, res) {
+                $("#newJudgeAddress" + index).html(res);
+            });
 
-            $('#initialPrice').html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
+            contractInstance.sellerAddress(function (err, res) {
+                $("#newSellerAddress" + index).html(res);
+            });
 
-            return auctionInstance.sellerAddress();
+            contractInstance.currentHighestBidderAddress(function (err, res) {
+                $("#newCurrentHighestBidderAddress" + index).html(res);
+            });
 
-        }).then(function (_sellerAddress) {
-            App.sellerAddress = _sellerAddress;
+            contractInstance.biddingPeriod(function (err, res) {
+                biddingPeriod = res.toNumber();
 
-            $('#sellerAddress').html(_sellerAddress);
+                if (currentTime !== null) {
+                    $("#newTimePeriod" + index).html(currentTime + "/" + biddingPeriod);
+                }
+            });
 
-            if (App.account === _sellerAddress) {
-                $('#earlySettleButton').show();
-            } else {
-                $('#earlySettleButton').hide();
-            }
+            contractInstance.currentTime(function (err, res) {
+                currentTime = res.toNumber();
 
-            return auctionInstance.judgeAddress();
-        }).then(function (_judgeAddress) {
-            App.judgeAddress = _judgeAddress;
+                if (biddingPeriod !== null) {
+                    $("#newTimePeriod" + index).html(currentTime + "/" + biddingPeriod);
+                }
+            });
 
-            $('#judgeAddress').html(_judgeAddress);
+            contractInstance.currentHighestBid(function (err, res) {
+                var currentHighestBid = res.toNumber();
 
-            return auctionInstance.biddingPeriod();
-        }).then(function (_biddingPeriodSeconds) {
-            App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
+                $("#newCurrentHighestBid" + index).html(currentHighestBid);
+            });
 
-            $('#endTime').html(_biddingPeriodSeconds.toNumber());
+            contractInstance.minimumPriceIncrement(function (err, res) {
+                var minimumPriceIncrement = res.toNumber();
 
-            return auctionInstance.currentTime();
-        }).then(function (_currentTime) {
-            App.currentTime = _currentTime.toNumber();
+                $("#newMinimumPriceIncrement" + index).html(minimumPriceIncrement);
 
-            $('#currentTime').html(App.currentTime);
+                loader.hide();
+            });
+        } else if(type === App.HARDCODED) {
+            contractInstance.deployed().then(function (instance) {
+                auctionInstance = instance;
 
-            return auctionInstance.minimumPriceIncrement();
-        }).then(function (_minimumPriceIncrement) {
-            App.minimumPriceIncrement = web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether');
+                web3.eth.getBalance(instance.address, function (err, balance) {
+                    if(err == null) {
+                        App.contractBalance = web3.fromWei(balance.toNumber(), 'ether');
+                        $('#newContractBalance' + index).html(web3.fromWei(balance.toNumber(), 'ether'));
+                    } else {
+                        console.log(err);
+                    }
+                });
 
-            $('#minimumPriceIncrement').html(App.minimumPriceIncrement);
+                $('#newContractAddress' + index).html(instance.address);
 
-            return auctionInstance.currentHighestBid();
-        }).then(function (_currentHighestBid) {
-            App.currentHighestBid = web3.fromWei(_currentHighestBid.toNumber(), 'ether');
+                return auctionInstance.initialPrice();
 
-            $('#currentHighestBid').html(App.currentHighestBid);
+            }).then(function (_initialPrice) {
+                App.initialPrice = _initialPrice.toNumber();
 
-            return auctionInstance.lastBidTimestamp();
-        }).then(function (_lastBidTimestamp) {
-            App.lastBidTimestamp = _lastBidTimestamp.toNumber();
-            var date = new Date(_lastBidTimestamp * 1000).toISOString();
-            $('#lastBidTimestamp').html(date);
-            return auctionInstance.currentHighestBidderAddress();
-        }).then(function (_currentHighestBidderAddress) {
-            App.currentHighestBudderAddress = _currentHighestBidderAddress;
-            $('#currentHighestBidderAddress').html(_currentHighestBidderAddress);
-            return auctionInstance.outcome();
-        }).then(function (_outcome) {
-            App.outcome = _outcome.toNumber();
-            var outcomeMessage = null;
+                $('#newInitialPrice' + index).html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
 
-            switch (App.outcome) {
-                case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
-                case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
-                case 2: outcomeMessage = "Auction has finished successfully."; break;
-            }
+                return auctionInstance.sellerAddress();
 
-            $('#outcome').html(outcomeMessage);
+            }).then(function (_sellerAddress) {
+                App.sellerAddress = _sellerAddress;
 
-            App.refreshElements();
+                $('#newSellerAddress' + index).html(_sellerAddress);
 
-            $('#timePeriod').html(App.currentTime + "/" + App.biddingPeriodSeconds);
+                if (App.myAccountAddress === _sellerAddress) {
+                    $('#newEarlySettleButton' + index).show();
+                } else {
+                    $('#newEarlySettleButton' + index).hide();
+                }
 
-            loader.hide();
-        });
+                return auctionInstance.judgeAddress();
+            }).then(function (_judgeAddress) {
+                App.judgeAddress = _judgeAddress;
+
+                $('#newJudgeAddress' + index).html(_judgeAddress);
+
+                return auctionInstance.biddingPeriod();
+            }).then(function (_biddingPeriodSeconds) {
+                App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
+
+                $('#newEndTime' + index).html(_biddingPeriodSeconds.toNumber());
+
+                return auctionInstance.currentTime();
+            }).then(function (_currentTime) {
+                App.currentTime = _currentTime.toNumber();
+
+                $('#newCurrentTime' + index).html(App.currentTime);
+
+                return auctionInstance.minimumPriceIncrement();
+            }).then(function (_minimumPriceIncrement) {
+                App.minimumPriceIncrement = web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether');
+
+                $('#newMinimumPriceIncrement' + index).html(App.minimumPriceIncrement);
+
+                return auctionInstance.currentHighestBid();
+            }).then(function (_currentHighestBid) {
+                App.currentHighestBid = web3.fromWei(_currentHighestBid.toNumber(), 'ether');
+
+                $('#newCurrentHighestBid' + index).html(App.currentHighestBid);
+
+                return auctionInstance.lastBidTimestamp();
+            }).then(function (_lastBidTimestamp) {
+                App.lastBidTimestamp = _lastBidTimestamp.toNumber();
+                var date = new Date(_lastBidTimestamp * 1000).toISOString();
+                $('#newLastBidTimestamp' + index).html(date);
+                return auctionInstance.currentHighestBidderAddress();
+            }).then(function (_currentHighestBidderAddress) {
+                App.currentHighestBudderAddress = _currentHighestBidderAddress;
+                $('#newCurrentHighestBidderAddress' + index).html(_currentHighestBidderAddress);
+                return auctionInstance.outcome();
+            }).then(function (_outcome) {
+                App.outcome = _outcome.toNumber();
+                var outcomeMessage = null;
+
+                switch (App.outcome) {
+                    case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
+                    case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
+                    case 2: outcomeMessage = "Auction has finished successfully."; break;
+                }
+
+                $('#newOutcome' + index).html(outcomeMessage);
+
+                App.refreshElements();
+
+                $('#newTimePeriod' + index).html(App.currentTime + "/" + App.biddingPeriodSeconds);
+
+                loader.hide();
+            });
+        }
     },
 
     refreshElements: function() {
@@ -250,7 +396,7 @@ App = {
             $('#bidForm').show();
             $('#settleButton').hide();
 
-            if(App.account === App.sellerAddress) {
+            if(App.myAccountAddress === App.sellerAddress) {
                 $('#earlySettleButton').show();
             } else {
                 $('#earlySettleButton').hide();
@@ -261,7 +407,7 @@ App = {
             $('#settleButton').hide();
             $('#timeForm').hide();
 
-            if(App.account === App.judgeAddress) {
+            if(App.myAccountAddress === App.judgeAddress) {
 
             }
         } else if(App.outcome === 2) {
@@ -269,7 +415,7 @@ App = {
             $('#earlySettleButton').hide();
             $('#timeForm').hide();
 
-            if((App.account === App.judgeAddress || App.account === App.sellerAddress) && App.contractBalance > 0) {
+            if((App.myAccountAddress === App.judgeAddress || App.myAccountAddress === App.sellerAddress) && App.contractBalance > 0) {
                 $('#settleButton').show()
             } else {
                 $('#settleButton').hide()
@@ -277,105 +423,110 @@ App = {
         }
     },
 
-    createBid: function () {
-        var inputBid = parseFloat($('#inputBid').val());
+    createBid: function (index) {
+        var contractInstance = App.activeContracts[index].contract;
+        var type = App.activeContracts[index].type;
 
-        App.contracts.Auction.deployed().then(function (instance) {
-            console.log(inputBid);
-            return instance.bid({from: App.account, gas: 3000000, value: web3.toWei(inputBid)});
-        }).then(function (result) {
-            console.log(result);
-        }).catch(function (err) {
-            console.error(err);
-        });
+        var createBidField = $('#newInputBid' + index);
+
+        var inputBid = parseFloat(createBidField.val());
+        createBidField.val('');
+
+        if(type === App.HARDCODED) {
+            contractInstance.deployed().then(function (instance) {
+                console.log(inputBid);
+                return instance.bid({from: App.myAccountAddress, gas: 3000000, value: web3.toWei(inputBid)});
+            }).then(function (result) {
+                console.log(result);
+                App.renderContract(index);
+            }).catch(function (err) {
+                console.error(err);
+            });
+        } else if(type === App.DYNAMIC) {
+            contractInstance.bid({from: App.myAccountAddress, gas: 3000000, value: web3.toWei(inputBid)}, function (err, res) {
+                if(!err) {
+                    App.renderContract(index);
+                }
+            });
+        }
     },
 
-    changeTime: function() {
-        var inputTime = parseInt($('#inputTime').val());
+    changeTime: function(index) {
+        var contractInstance = App.activeContracts[index].contract;
+        var type = App.activeContracts[index].type;
 
-        App.contracts.Auction.deployed().then(function (instance) {
-            return instance.setCurrentTime(inputTime);
-        }).then(function (result) {
-            console.log(result);
+        var inputTimeField = $('#newInputTime' + index);
 
-            if(inputTime >= App.biddingPeriodSeconds) {
-                $('#settleButton').show();
-            }
+        var inputTime = parseInt(inputTimeField.val());
+        inputTimeField.val('');
 
-        }).catch(function (err) {
-            debugger;
-            console.error(err);
-        });
+        if(type === App.HARDCODED) {
+            contractInstance.deployed().then(function (instance) {
+                return instance.setCurrentTime(inputTime);
+            }).then(function (result) {
+                console.log(result);
+                App.renderContract(index);
+
+                if (inputTime >= App.biddingPeriodSeconds) {
+                    $('#settleButton').show();
+                }
+
+            }).catch(function (err) {
+                console.error(err);
+            });
+        } else if(type === App.DYNAMIC) {
+            contractInstance.setCurrentTime(inputTime, {from: App.myAccountAddress, gas: 30000}, function(err, res) {
+                if(!err) {
+                    App.renderContract(index);
+                }
+            });
+        }
     },
 
-    settle: function() {
-        App.contracts.Auction.deployed().then(function (instance) {
-            return instance.settle({from: App.account});
-        }).then(function (result) {
-            console.log(result);
-        }).catch(function (err) {
-            console.error(err);
-        });
+    settle: function(index) {
+        var contractInstance = App.activeContracts[index].contract;
+        var type = App.activeContracts[index].type;
+
+        if(type === App.HARDCODED) {
+            contractInstance.deployed().then(function (instance) {
+                return instance.settle({from: App.myAccountAddress});
+            }).then(function (result) {
+                App.renderContract(index);
+                console.log(result);
+            }).catch(function (err) {
+                console.error(err);
+            });
+        } else if(type === App.DYNAMIC) {
+            contractInstance.settle({from: App.myAccountAddress}, function(err, res) {
+                if(!err) {
+                    App.renderContract(index);
+                }
+            });
+        }
     },
 
-    earlySettle: function () {
-        App.contracts.Auction.deployed().then(function (instance) {
-            return instance.settleEarly({from: App.account});
-        }).then(function (result) {
-            console.log(result);
-        }).catch(function (err) {
-            console.error(err);
-        });
+    earlySettle: function (index) {
+        var contractInstance = App.activeContracts[index].contract;
+        var type = App.activeContracts[index].type;
 
-        App.contracts.Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-            return auctionInstance.sellerAddress();
-        }).then(function (_sellerAddress) {
-            if (_sellerAddress === App.account) {
+        if(type === App.HARDCODED) {
 
-            }
-        });
+            contractInstance.deployed().then(function (instance) {
+                return instance.settleEarly({from: App.myAccountAddress});
+            }).then(function (result) {
+                App.renderContract(index);
+                console.log(result);
+            }).catch(function (err) {
+                console.error(err);
+            });
+        } else if(type === App.DYNAMIC) {
+            contractInstance.settleEarly({from: App.myAccountAddress}, function(err, res) {
+                if(!err) {
+                    App.renderContract(index);
+                }
+            });
+        }
     },
-
-    // getTimeRemaining: function (endtime) {
-    //     var t = Date.parse(endtime) - Date.parse(new Date());
-    //     var seconds = Math.floor((t / 1000) % 60);
-    //     var minutes = Math.floor((t / 1000 / 60) % 60);
-    //     var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-    //     var days = Math.floor(t / (1000 * 60 * 60 * 24));
-    //     return {
-    //         'total': t,
-    //         'days': days,
-    //         'hours': hours,
-    //         'minutes': minutes,
-    //         'seconds': seconds
-    //     };
-    // },
-    //
-    // initializeClock: function (id, endtime) {
-    //     var clock = document.getElementById(id);
-    //     var daysSpan = clock.querySelector('.days');
-    //     var hoursSpan = clock.querySelector('.hours');
-    //     var minutesSpan = clock.querySelector('.minutes');
-    //     var secondsSpan = clock.querySelector('.seconds');
-    //
-    //     function updateClock() {
-    //         var t = App.getTimeRemaining(endtime);
-    //
-    //         daysSpan.innerHTML = t.days;
-    //         hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
-    //         minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-    //         secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
-    //
-    //         if (t.total <= 0) {
-    //             clearInterval(timeinterval);
-    //         }
-    //     }
-    //
-    //     updateClock();
-    //     var timeinterval = setInterval(updateClock, 1000);
-    // }
-
 };
 
 $(function () {

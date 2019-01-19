@@ -1375,12 +1375,12 @@
     "5778": {
       "events": {},
       "links": {},
-      "address": "0x8F5F867ac2B29c9466c7e0a560CA7bFEa58B3a77",
-      "transactionHash": "0x449973922635e963fad0d772928a2faf7690ae0bd4ce8f2687378ec7062587d4"
+      "address": "0xddC38A26A65D3557C366392DEF66CD927587717c",
+      "transactionHash": "0x7cebf77e24be80b8ec8788ae229ab52dec98eec36c50fb8065f2ba76390330a5"
     }
   },
   "schemaVersion": "3.0.1",
-  "updatedAt": "2019-01-18T10:06:13.932Z",
+  "updatedAt": "2019-01-19T15:18:45.849Z",
   "devdoc": {
     "methods": {}
   },

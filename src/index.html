@@ -51,12 +51,6 @@
             font-weight: 300;
         }
 
-        .multi-column-dropdown {
-            list-style: none;
-            margin: 0px;
-            padding: 0px;
-        }
-
         .multi-column-dropdown li a {
             display: block;
             clear: both;
@@ -67,20 +61,6 @@
 
         ul {
             list-style-type: none;
-        }
-
-        /*.card {*/
-        /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.6);*/
-        /*transition: 0.3s;*/
-        /*width: 75%;*/
-        /*margin-top: 10px;*/
-        /*margin-left: 10px;*/
-        /*margin-right: 10px;*/
-        /*padding: 5px;*/
-        /*}*/
-
-        .card:hover {
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
         }
 
         @media (max-width: 600px) {
@@ -102,121 +82,101 @@
 </head>
 <body>
 
-<nav class="navbar navbar-default">
+<nav class="navbar">
     <div class="container-fluid">
-
         <div class="navbar-header">
             <a class="navbar-brand" href="#">RESC</a>
         </div>
 
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle glyphicon glyphicon-user" data-toggle="dropdown"></a>
-                    <ul class="dropdown-menu">
-                        <li><a class="glyphicon glyphicon-home" id="accountAddress"></a></li>
-                        <li><a class="glyphicon glyphicon-euro" id="accountBalance"></a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+        <ul class="nav navbar-right">
+            <li><span class="badge badge-light" id="accountAddress"></span></li>
+            <li>(<span class="badge badge-light" id="accountBalance"></span>)</li>
+        </ul>
     </div>
 </nav>
 
 <div class="loader" id="loader"></div>
 
-<div class="container text-center">
+<!--<div class="container text-center">-->
 
-    <div class="btn">
-        <h3>Contract</h3>
-        <span class="badge badge-light" id="contractAddress"></span>
-        (<span class="badge badge-light" id="contractBalance"></span>)
-    </div>
-
-    <div class="alert alert-success container" id="outcome"></div>
-
-    <div class="container">
-        <table class="table-condensed table">
-            <tr class="thead-light">
-                <th>Current time</th>
-                <th>Initial price</th>
-                <th>Minimal increment</th>
-                <th>Highest bid</th>
-            </tr>
-            <tr>
-                <td id="timePeriod"></td>
-                <td id="initialPrice"></td>
-                <td id="minimumPriceIncrement"></td>
-                <td id="currentHighestBid"></td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="container">
-        <table class="table">
-            <tr class="thead-light">
-                <th>Role</th>
-                <th>Address</th>
-            </tr>
-            <tr>
-                <td>Seller</td>
-                <td id="sellerAddress"></td>
-            </tr>
-            <tr>
-                <td>Judge</td>
-                <td id="judgeAddress"></td>
-            </tr>
-            <tr>
-                <td>Highest bidder</td>
-                <td id="currentHighestBidderAddress"></td>
-            </tr>
-        </table>
-    </div>
-
-    <br>
-
-    <!--<div class="container">-->
-        <!--<form>-->
-            <!--<div class="form-group">-->
-                <!--<label for="inputTime">Change time</label>-->
-                <!--<input class="form-control" type="number" id="inputTime">-->
-            <!--</div>-->
-        <!--</form>-->
-        <!--<button type="submit" class="btn btn-primary">Change time</button>-->
+    <!--<div class="btn">-->
+        <!--<h3>Contract</h3>-->
+        <!--<span class="badge badge-light" id="contractAddress"></span>-->
+        <!--(<span class="badge badge-light" id="contractBalance"></span>)-->
     <!--</div>-->
 
-    <br>
+    <!--<div class="alert alert-success container" id="outcome"></div>-->
 
-    <div class="row">
-        <div class="col-md">
-            <form>
-                <div class="form-group">
-                    <label for="inputBid">Bidding period</label>
-                    <input class="form-control" type="number" id="inputBid">
-                </div>
-            </form>
-            <button type="submit" class="btn btn-primary">Place bid</button>
-        </div>
-        <div class="col-md">
-            <form>
-                <div class="form-group">
-                    <label for="inputTime">Change time</label>
-                    <input class="form-control" type="number" id="inputTime">
-                </div>
-            </form>
-            <button type="submit" class="btn btn-primary">Change time</button>
-        </div>
-    </div>
+    <!--<div class="container">-->
+        <!--<table class="table-condensed table">-->
+            <!--<tr class="thead-light">-->
+                <!--<th>Current time</th>-->
+                <!--<th>Initial price</th>-->
+                <!--<th>Minimal increment</th>-->
+                <!--<th>Highest bid</th>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td id="timePeriod"></td>-->
+                <!--<td id="initialPrice"></td>-->
+                <!--<td id="minimumPriceIncrement"></td>-->
+                <!--<td id="currentHighestBid"></td>-->
+            <!--</tr>-->
+        <!--</table>-->
+    <!--</div>-->
 
-    <br>
+    <!--<div class="container">-->
+        <!--<table class="table">-->
+            <!--<tr class="thead-light">-->
+                <!--<th>Role</th>-->
+                <!--<th>Address</th>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>Seller</td>-->
+                <!--<td id="sellerAddress"></td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>Judge</td>-->
+                <!--<td id="judgeAddress"></td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>Highest bidder</td>-->
+                <!--<td id="currentHighestBidderAddress"></td>-->
+            <!--</tr>-->
+        <!--</table>-->
+    <!--</div>-->
 
-    <div class="container">
-        <button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>
-        <button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>
-    </div>
-</div>
+    <!--<br>-->
 
-<hr>
+    <!--<div class="row">-->
+        <!--<div class="col-md">-->
+            <!--<form>-->
+                <!--<div class="form-group">-->
+                    <!--<label for="inputBid">Place bid</label>-->
+                    <!--<input class="form-control" type="number" id="inputBid">-->
+                <!--</div>-->
+            <!--</form>-->
+            <!--<button type="submit" class="btn btn-primary" onclick="App.createBid()">Place bid</button>-->
+        <!--</div>-->
+        <!--<div class="col-md">-->
+            <!--<form>-->
+                <!--<div class="form-group">-->
+                    <!--<label for="inputTime">Change time</label>-->
+                    <!--<input class="form-control" type="number" id="inputTime">-->
+                <!--</div>-->
+            <!--</form>-->
+            <!--<button type="submit" class="btn btn-primary" onclick="App.changeTime()">Change time</button>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div class="container">-->
+        <!--<button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>-->
+        <!--<button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>-->
+    <!--</div>-->
+<!--</div>-->
+
+<ul id="newContractList" style="padding: 0">
+
+</ul>
 
 <div class="container">
     <h2>Create new contract</h2>
@@ -242,7 +202,7 @@
             <select class="form-control" id="judgesInput"></select>
         </div>
     </form>
-    <button class="btn btn-primary" id="newContractButton" onclick="App.createContract()">Deploy</button>
+    <button class="btn btn-primary" id="newContractButton">Deploy</button>
 </div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

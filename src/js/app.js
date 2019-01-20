@@ -190,7 +190,7 @@ App = {
             '\n' +
             '    <div class="row">\n' +
             '        <div class="col-md">\n' +
-            '            <form>\n' +
+            '            <form id="bidForm' + index + '">\n' +
             '                <div class="form-group">\n' +
             '                    <label for="newInputBid">Place bid</label>\n' +
             '                    <input class="form-control" type="number" id="newInputBid' + index + '">\n' +
@@ -199,7 +199,7 @@ App = {
             '            <button type="submit" class="btn btn-primary" onclick="App.createBid(' + index + ')"">Place bid</button>\n' +
             '        </div>\n' +
             '        <div class="col-md">\n' +
-            '            <form>\n' +
+            '            <form id="timeForm' + index + '">\n' +
             '                <div class="form-group">\n' +
             '                    <label for="newInputTime">Change time</label>\n' +
             '                    <input class="form-control" type="number" id="newInputTime' + index + '">\n' +
@@ -210,24 +210,21 @@ App = {
             '    </div>\n' +
             '\n' +
             '    <div class="container">\n' +
-            '        <button class="btn btn-danger" id="newEarlySettleButton" onclick="App.earlySettle(' + index + ')">Early settle</button>\n' +
-            '        <button class="btn btn-warning" id="newSettleButton" onclick="App.settle(' + index + ')">Settle</button>\n' +
+            '        <button class="btn btn-danger" id="newEarlySettleButton' + index + '" onclick="App.earlySettle(' + index + ')">Early settle</button>\n' +
+            '        <button class="btn btn-warning" id="newSettleButton' + index + '" onclick="App.settle(' + index + ')">Settle</button>\n' +
             '    </div>\n' +
             '</div>' +
             '</li>' +
             '<hr>';
     },
 
-    renderContract: function(position) {
-        var index;
-        var auctionInstance;
+    renderContract: function(index) {
         var loader = $('#loader');
 
-        if(typeof position === "undefined") {
+        if(typeof index === "undefined") {
             index = App.activeContracts.length-1;
             $('#newContractList').append(App.htmlContractElement(index));
         } else {
-            index = position;
             $("#contract" + position).html(App.htmlContractElement(index));
         }
 
@@ -281,15 +278,27 @@ App = {
             contractInstance.outcome(function(err, res) {
 
                 App.activeContracts[index].outcome = res.toNumber();
-                var outcomeMessage = null;
+
+                var outcomeMessage;
+                var outcomeFieldClass;
 
                 switch (res.toNumber()) {
-                    case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
-                    case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
-                    case 2: outcomeMessage = "Auction has finished successfully."; break;
+                    case 0:
+                        outcomeMessage = "Auction still on progress. Place your bid below.";
+                        outcomeFieldClass = "alert-success";
+                        break;
+                    case 1:
+                        outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids.";
+                        outcomeFieldClass = "alert-danger";
+                        break;
+                    case 2:
+                        outcomeMessage = "Auction has finished successfully.";
+                        outcomeFieldClass = "alert-info";
+                        break;
                 }
-                App.activeContracts[index].outcomeMessage = outcomeMessage;
 
+                App.activeContracts[index].outcomeFieldClass = outcomeFieldClass;
+                App.activeContracts[index].outcomeMessage = outcomeMessage;
             });
 
             $('#newContractBalance' + index).html(web3.fromWei(App.activeContracts[index].contractBalance, 'ether'));
@@ -297,15 +306,19 @@ App = {
             $('#newInitialPrice' + index).html(web3.fromWei(App.activeContracts[index].initialPrice, 'ether'));
             $('#newSellerAddress' + index).html(App.activeContracts[index].sellerAddress);
             $('#newJudgeAddress' + index).html(App.activeContracts[index].judgeAddress);
-            $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether');
+            $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether'));
             $('#newCurrentHighestBid' + index).html(web3.fromWei(App.activeContracts[index].currentHighestBid, 'ether'));
             $('#newCurrentHighestBidderAddress' + index).html(App.activeContracts[index].currentHighestBidderAddress);
             $('#newOutcome' + index).html(App.activeContracts[index].outcomeMessage);
             $('#newTimePeriod' + index).html(App.activeContracts[index].currentTime + "/" + App.activeContracts[index].biddingPeriodSeconds);
 
+            App.refreshElements(index);
+
             loader.hide();
 
         } else if(type === App.HARDCODED) {
+
+            var auctionInstance;
 
             contractInstance.deployed().then(function (instance) {
 
@@ -364,14 +377,25 @@ App = {
             }).then(function (_outcome) {
 
                 App.activeContracts[index].outcome = _outcome.toNumber();
-                var outcomeMessage = null;
+                var outcomeMessage;
+                var outcomeFieldClass;
 
                 switch (_outcome.toNumber()) {
-                    case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
-                    case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
-                    case 2: outcomeMessage = "Auction has finished successfully."; break;
+                    case 0:
+                        outcomeMessage = "Auction still on progress. Place your bid below.";
+                        outcomeFieldClass = "alert-success";
+                        break;
+                    case 1:
+                        outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids.";
+                        outcomeFieldClass = "alert-danger";
+                        break;
+                    case 2:
+                        outcomeMessage = "Auction has finished successfully.";
+                        outcomeFieldClass = "alert-info";
+                        break;
                 }
 
+                App.activeContracts[index].outcomeFieldClass = outcomeFieldClass;
                 App.activeContracts[index].outcomeMessage = outcomeMessage;
 
             }).then(function() {
@@ -381,47 +405,56 @@ App = {
                 $('#newInitialPrice' + index).html(web3.fromWei(App.activeContracts[index].initialPrice, 'ether'));
                 $('#newSellerAddress' + index).html(App.activeContracts[index].sellerAddress);
                 $('#newJudgeAddress' + index).html(App.activeContracts[index].judgeAddress);
-                $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether');
+                $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether'));
                 $('#newCurrentHighestBid' + index).html(web3.fromWei(App.activeContracts[index].currentHighestBid, 'ether'));
                 $('#newCurrentHighestBidderAddress' + index).html(App.activeContracts[index].currentHighestBidderAddress);
                 $('#newOutcome' + index).html(App.activeContracts[index].outcomeMessage);
+                $('#newOutcome' + index).addClass(App.activeContracts[index].outcomeFieldClass);
                 $('#newTimePeriod' + index).html(App.activeContracts[index].currentTime + "/" + App.activeContracts[index].biddingPeriodSeconds);
 
-                App.refreshElements();
+                App.refreshElements(index);
 
                 loader.hide();
             });
         }
     },
 
-    refreshElements: function() {
-        if (App.outcome === 0) {
-            $('#bidForm').show();
-            $('#settleButton').hide();
+    refreshElements: function(index) {
+        var bidForm = $('#bidForm' + index);
+        var timeForm = $('#timeForm' + index);
+        var settleButton = $('#newSettleButton' + index);
+        var earlySettleButton = $('#newEarlySettleButton' + index);
 
-            if(App.myAccountAddress === App.sellerAddress) {
-                $('#earlySettleButton').show();
+        if (App.activeContracts[index].outcome === 0) {
+
+            bidForm.show();
+            timeForm.show();
+            settleButton.hide();
+
+            if(App.activeContracts[index].sellerAddress === App.myAccountAddress) {
+                earlySettleButton.show();
             } else {
-                $('#earlySettleButton').hide();
+                earlySettleButton.hide();
             }
+
         } else if(App.outcome === 1) {
-            $('#bidForm').hide();
-            $('#earlySettleButton').hide();
-            $('#settleButton').hide();
-            $('#timeForm').hide();
 
-            if(App.myAccountAddress === App.judgeAddress) {
+            bidForm.hide();
+            timeForm.show();
+            earlySettleButton.hide();
+            settleButton.hide();
 
-            }
         } else if(App.outcome === 2) {
-            $('#bidForm').hide();
-            $('#earlySettleButton').hide();
-            $('#timeForm').hide();
 
-            if((App.myAccountAddress === App.judgeAddress || App.myAccountAddress === App.sellerAddress) && App.contractBalance > 0) {
-                $('#settleButton').show()
+            bidForm.hide();
+            timeForm.show();
+            earlySettleButton.hide();
+            settleButton.show();
+
+            if(App.activeContracts[index].sellerAddress === App.myAccountAddress || App.activeContracts[index].judgeAddress === App.myAccountAddress) {
+                settleButton.show();
             } else {
-                $('#settleButton').hide()
+                settleButton.hide();
             }
         }
     },
@@ -443,7 +476,7 @@ App = {
                 console.log(result);
                 App.renderContract(index);
             }).catch(function (err) {
-                console.error(err);
+                alert(err);
             });
         } else if(type === App.DYNAMIC) {
             contractInstance.bid({from: App.myAccountAddress, gas: 3000000, value: web3.toWei(inputBid)}, function (err, res) {
@@ -475,7 +508,7 @@ App = {
                 }
 
             }).catch(function (err) {
-                console.error(err);
+                alert(err);
             });
         } else if(type === App.DYNAMIC) {
             contractInstance.setCurrentTime(inputTime, {from: App.myAccountAddress}, function(err, res) {
@@ -498,7 +531,7 @@ App = {
                 App.renderContract(index);
                 console.log(result);
             }).catch(function (err) {
-                console.error(err);
+                alert(err);
             });
         } else if(type === App.DYNAMIC) {
             contractInstance.settle({from: App.myAccountAddress}, function(err, res) {
@@ -521,7 +554,7 @@ App = {
                 App.renderContract(index);
                 console.log(result);
             }).catch(function (err) {
-                console.error(err);
+                alert(err);
             });
         } else if(type === App.DYNAMIC) {
             contractInstance.settleEarly({from: App.myAccountAddress}, function(err, res) {

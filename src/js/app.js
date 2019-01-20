@@ -24,7 +24,7 @@ App = {
     minimumPriceIncrement: 0,
     currentHighestBid: 0,
     lastBidTimestamp: 0,
-    currentHighestBudderAddress: '0x0',
+    currentHighestBidderAddress: '0x0',
     biddingPeriodSeconds: 0,
 
     HARDCODED: "hardcoded",
@@ -234,71 +234,53 @@ App = {
         var contractInstance = App.activeContracts[index].contract;
         var type = App.activeContracts[index].type;
 
-        var biddingPeriod = null;
-        var currentTime = null;
-
         if(type === App.DYNAMIC) {
 
-            $('#newContractAddress' + index).html(contractInstance.address);
+            App.activeContracts[index].contractAddress = contractInstance.address;
 
             web3.eth.getBalance(contractInstance.address, function (err, _balance) {
                 if (err == null) {
-                    var balance = web3.fromWei(_balance.toNumber(), 'ether');
-                    $('#newContractBalance' + index).html(balance);
+                    App.activeContracts[index].contractBalance = _balance.toNumber();
                 } else {
-                    console.log(err);
+                    alert(err);
                 }
             });
 
             contractInstance.initialPrice(function (err, res) {
-                var initialPrice = res.toNumber();
-
-                $("#newInitialPrice" + index).html(initialPrice);
+                App.activeContracts[index].initialPrice = res.toNumber();
             });
 
             contractInstance.judgeAddress(function (err, res) {
-                $("#newJudgeAddress" + index).html(res);
+                App.activeContracts[index].judgeAddress = res;
             });
 
             contractInstance.sellerAddress(function (err, res) {
-                $("#newSellerAddress" + index).html(res);
+                App.activeContracts[index].sellerAddress = res;
             });
 
             contractInstance.currentHighestBidderAddress(function (err, res) {
-                $("#newCurrentHighestBidderAddress" + index).html(res);
+                App.activeContracts[index].currentHighestBidderAddress = res;
             });
 
             contractInstance.biddingPeriod(function (err, res) {
-                biddingPeriod = res.toNumber();
-
-                if (currentTime !== null) {
-                    $("#newTimePeriod" + index).html(currentTime + "/" + biddingPeriod);
-                }
+                App.activeContracts[index].biddingPeriod = res.toNumber();
             });
 
             contractInstance.currentTime(function (err, res) {
-                currentTime = res.toNumber();
-
-                if (biddingPeriod !== null) {
-                    $("#newTimePeriod" + index).html(currentTime + "/" + biddingPeriod);
-                }
+                App.activeContracts[index].currentTime = res.toNumber();
             });
 
             contractInstance.currentHighestBid(function (err, res) {
-                var currentHighestBid = web3.fromWei(res.toNumber(), 'ether');
-
-                $("#newCurrentHighestBid" + index).html(currentHighestBid);
+                App.activeContracts[index].currentHighestBid = res.toNumber();
             });
 
             contractInstance.minimumPriceIncrement(function (err, res) {
-                var minimumPriceIncrement = res.toNumber();
-
-                $("#newMinimumPriceIncrement" + index).html(minimumPriceIncrement);
-
-                loader.hide();
+                App.activeContracts[index].minimumPriceIncrement = res.toNumber();
             });
 
             contractInstance.outcome(function(err, res) {
+
+                App.activeContracts[index].outcome = res.toNumber();
                 var outcomeMessage = null;
 
                 switch (res.toNumber()) {
@@ -306,99 +288,106 @@ App = {
                     case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
                     case 2: outcomeMessage = "Auction has finished successfully."; break;
                 }
+                App.activeContracts[index].outcomeMessage = outcomeMessage;
 
-                $('#newOutcome' + index).html(outcomeMessage);
             });
+
+            $('#newContractBalance' + index).html(web3.fromWei(App.activeContracts[index].contractBalance, 'ether'));
+            $('#newContractAddress' + index).html(App.activeContracts[index].contractAddress);
+            $('#newInitialPrice' + index).html(web3.fromWei(App.activeContracts[index].initialPrice, 'ether'));
+            $('#newSellerAddress' + index).html(App.activeContracts[index].sellerAddress);
+            $('#newJudgeAddress' + index).html(App.activeContracts[index].judgeAddress);
+            $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether');
+            $('#newCurrentHighestBid' + index).html(web3.fromWei(App.activeContracts[index].currentHighestBid, 'ether'));
+            $('#newCurrentHighestBidderAddress' + index).html(App.activeContracts[index].currentHighestBidderAddress);
+            $('#newOutcome' + index).html(App.activeContracts[index].outcomeMessage);
+            $('#newTimePeriod' + index).html(App.activeContracts[index].currentTime + "/" + App.activeContracts[index].biddingPeriodSeconds);
+
+            loader.hide();
+
         } else if(type === App.HARDCODED) {
+
             contractInstance.deployed().then(function (instance) {
+
                 auctionInstance = instance;
+                App.activeContracts[index].contractAddress = instance.address;
 
                 web3.eth.getBalance(instance.address, function (err, balance) {
                     if(err == null) {
-                        App.contractBalance = web3.fromWei(balance.toNumber(), 'ether');
-                        $('#newContractBalance' + index).html(web3.fromWei(balance.toNumber(), 'ether'));
+                        App.activeContracts[index].contractBalance = balance.toNumber();
                     } else {
-                        console.log(err);
+                        alert(err);
                     }
                 });
-
-                $('#newContractAddress' + index).html(instance.address);
-
                 return auctionInstance.initialPrice();
 
             }).then(function (_initialPrice) {
-                App.initialPrice = _initialPrice.toNumber();
 
-                $('#newInitialPrice' + index).html(web3.fromWei(_initialPrice.toNumber(), 'ether'));
-
+                App.activeContracts[index].initialPrice = _initialPrice.toNumber();
                 return auctionInstance.sellerAddress();
 
             }).then(function (_sellerAddress) {
-                App.sellerAddress = _sellerAddress;
 
-                $('#newSellerAddress' + index).html(_sellerAddress);
-
-                if (App.myAccountAddress === _sellerAddress) {
-                    $('#newEarlySettleButton' + index).show();
-                } else {
-                    $('#newEarlySettleButton' + index).hide();
-                }
-
+                App.activeContracts[index].sellerAddress = _sellerAddress;
                 return auctionInstance.judgeAddress();
+
             }).then(function (_judgeAddress) {
-                App.judgeAddress = _judgeAddress;
 
-                $('#newJudgeAddress' + index).html(_judgeAddress);
-
+                App.activeContracts[index].judgeAddress = _judgeAddress;
                 return auctionInstance.biddingPeriod();
+
             }).then(function (_biddingPeriodSeconds) {
-                App.biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
 
-                $('#newEndTime' + index).html(_biddingPeriodSeconds.toNumber());
-
+                App.activeContracts[index].biddingPeriodSeconds = _biddingPeriodSeconds.toNumber();
                 return auctionInstance.currentTime();
+
             }).then(function (_currentTime) {
-                App.currentTime = _currentTime.toNumber();
 
-                $('#newCurrentTime' + index).html(App.currentTime);
-
+                App.activeContracts[index].currentTime = _currentTime.toNumber();
                 return auctionInstance.minimumPriceIncrement();
+
             }).then(function (_minimumPriceIncrement) {
-                App.minimumPriceIncrement = web3.fromWei(_minimumPriceIncrement.toNumber(), 'ether');
 
-                $('#newMinimumPriceIncrement' + index).html(App.minimumPriceIncrement);
-
+                App.activeContracts[index].minimumPriceIncrement = _minimumPriceIncrement.toNumber();
                 return auctionInstance.currentHighestBid();
+
             }).then(function (_currentHighestBid) {
-                App.currentHighestBid = web3.fromWei(_currentHighestBid.toNumber(), 'ether');
 
-                $('#newCurrentHighestBid' + index).html(App.currentHighestBid);
-
+                App.activeContracts[index].currentHighestBid = _currentHighestBid.toNumber();
                 return auctionInstance.lastBidTimestamp();
-            }).then(function (_lastBidTimestamp) {
-                App.lastBidTimestamp = _lastBidTimestamp.toNumber();
-                var date = new Date(_lastBidTimestamp * 1000).toISOString();
-                $('#newLastBidTimestamp' + index).html(date);
-                return auctionInstance.currentHighestBidderAddress();
+
             }).then(function (_currentHighestBidderAddress) {
-                App.currentHighestBudderAddress = _currentHighestBidderAddress;
-                $('#newCurrentHighestBidderAddress' + index).html(_currentHighestBidderAddress);
+
+                App.activeContracts[index].currentHighestBidderAddress = _currentHighestBidderAddress;
                 return auctionInstance.outcome();
+
             }).then(function (_outcome) {
-                App.outcome = _outcome.toNumber();
+
+                App.activeContracts[index].outcome = _outcome.toNumber();
                 var outcomeMessage = null;
 
-                switch (App.outcome) {
+                switch (_outcome.toNumber()) {
                     case 0: outcomeMessage = "Auction still on progress. Place your bid below."; break;
                     case 1: outcomeMessage = "Auction has finished unsuccessfully. Nobody has placed any bids."; break;
                     case 2: outcomeMessage = "Auction has finished successfully."; break;
                 }
 
-                $('#newOutcome' + index).html(outcomeMessage);
+                App.activeContracts[index].outcomeMessage = outcomeMessage;
+
+            }).then(function() {
+
+                $('#newContractBalance' + index).html(web3.fromWei(App.activeContracts[index].contractBalance, 'ether'));
+                $('#newContractAddress' + index).html(App.activeContracts[index].contractAddress);
+                $('#newInitialPrice' + index).html(web3.fromWei(App.activeContracts[index].initialPrice, 'ether'));
+                $('#newSellerAddress' + index).html(App.activeContracts[index].sellerAddress);
+                $('#newJudgeAddress' + index).html(App.activeContracts[index].judgeAddress);
+                $('#newMinimumPriceIncrement' + index).html(web3.fromWei(App.activeContracts[index].minimumPriceIncrement, 'ether');
+                $('#newCurrentHighestBid' + index).html(web3.fromWei(App.activeContracts[index].currentHighestBid, 'ether'));
+                $('#newCurrentHighestBidderAddress' + index).html(App.activeContracts[index].currentHighestBidderAddress);
+                $('#newOutcome' + index).html(App.activeContracts[index].outcomeMessage);
+                $('#newTimePeriod' + index).html(App.activeContracts[index].currentTime + "/" + App.activeContracts[index].biddingPeriodSeconds);
 
                 App.refreshElements();
-
-                $('#newTimePeriod' + index).html(App.currentTime + "/" + App.biddingPeriodSeconds);
 
                 loader.hide();
             });

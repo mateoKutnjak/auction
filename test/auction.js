@@ -6,7 +6,7 @@ contract("Auction", function(accounts) {
     var judge = accounts[1];
     var other = accounts[2];
     var initial_price = 5;
-    var bidding_period_seconds = 60;
+    var bidding_period_seconds = 40;
     var minimum_price_increment = 1;
 
     beforeEach('setup contract for each test', function () {
@@ -60,35 +60,6 @@ contract("Auction", function(accounts) {
             return auctionInstance.setCurrentTime(firstTime, {from: other});
         }).then(function() {
             return auctionInstance.setCurrentTime(secondTime, {from: other});
-        }).then(assert.fail).catch(function(error) {
-            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
-        });
-    });
-
-    it('check early settle without highest bidder', function() {
-        return Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-            return auctionInstance.settleEarly({from: seller});
-        }).then(assert.fail).catch(function(error) {
-            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
-        });
-    });
-
-    it('check early settle without highest bidder from seller', function() {
-        return Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-            return auctionInstance.settleEarly({from: seller})
-        }).then(assert.fail).catch(function(error) {
-            assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
-        });
-    });
-
-    it('check early settle with highest bidder from non-seller', function() {
-        return Auction.deployed().then(function (instance) {
-            auctionInstance = instance;
-            return auctionInstance.bid({from: other, gas: 300000, value: 1});
-        }).then(function() {
-            return auctionInstance.settleEarly({from: other});
         }).then(assert.fail).catch(function(error) {
             assert(error.message.indexOf('revert') >= 0, "Other cannot settle auction early.");
         });

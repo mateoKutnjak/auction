@@ -8,24 +8,10 @@
     <title>Election Results</title>
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/timer.css" rel="stylesheet">
 
     <style>
         * {
             box-sizing: border-box;
-        }
-
-        .column2 {
-            float: left;
-            width: 75%;
-            padding: 10px;
-            margin: auto;
-        }
-
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
         }
 
         .loader {
@@ -36,14 +22,6 @@
             height: 120px;
             -webkit-animation: spin 2s linear infinite; /* Safari */
             animation: spin 2s linear infinite;
-        }
-
-        .dropdown-menu {
-            min-width: 300px;
-        }
-
-        .dropdown-menu.columns-2 {
-            min-width: 300px;
         }
 
         .dropdown-menu li a {
@@ -96,83 +74,6 @@
 </nav>
 
 <div class="loader" id="loader"></div>
-
-<!--<div class="container text-center">-->
-
-    <!--<div class="btn">-->
-        <!--<h3>Contract</h3>-->
-        <!--<span class="badge badge-light" id="contractAddress"></span>-->
-        <!--(<span class="badge badge-light" id="contractBalance"></span>)-->
-    <!--</div>-->
-
-    <!--<div class="alert alert-success container" id="outcome"></div>-->
-
-    <!--<div class="container">-->
-        <!--<table class="table-condensed table">-->
-            <!--<tr class="thead-light">-->
-                <!--<th>Current time</th>-->
-                <!--<th>Initial price</th>-->
-                <!--<th>Minimal increment</th>-->
-                <!--<th>Highest bid</th>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td id="timePeriod"></td>-->
-                <!--<td id="initialPrice"></td>-->
-                <!--<td id="minimumPriceIncrement"></td>-->
-                <!--<td id="currentHighestBid"></td>-->
-            <!--</tr>-->
-        <!--</table>-->
-    <!--</div>-->
-
-    <!--<div class="container">-->
-        <!--<table class="table">-->
-            <!--<tr class="thead-light">-->
-                <!--<th>Role</th>-->
-                <!--<th>Address</th>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td>Seller</td>-->
-                <!--<td id="sellerAddress"></td>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td>Judge</td>-->
-                <!--<td id="judgeAddress"></td>-->
-            <!--</tr>-->
-            <!--<tr>-->
-                <!--<td>Highest bidder</td>-->
-                <!--<td id="currentHighestBidderAddress"></td>-->
-            <!--</tr>-->
-        <!--</table>-->
-    <!--</div>-->
-
-    <!--<br>-->
-
-    <!--<div class="row">-->
-        <!--<div class="col-md">-->
-            <!--<form>-->
-                <!--<div class="form-group">-->
-                    <!--<label for="inputBid">Place bid</label>-->
-                    <!--<input class="form-control" type="number" id="inputBid">-->
-                <!--</div>-->
-            <!--</form>-->
-            <!--<button type="submit" class="btn btn-primary" onclick="App.createBid()">Place bid</button>-->
-        <!--</div>-->
-        <!--<div class="col-md">-->
-            <!--<form>-->
-                <!--<div class="form-group">-->
-                    <!--<label for="inputTime">Change time</label>-->
-                    <!--<input class="form-control" type="number" id="inputTime">-->
-                <!--</div>-->
-            <!--</form>-->
-            <!--<button type="submit" class="btn btn-primary" onclick="App.changeTime()">Change time</button>-->
-        <!--</div>-->
-    <!--</div>-->
-
-    <!--<div class="container">-->
-        <!--<button class="btn btn-danger" id="earlySettleButton" onclick="App.earlySettle()">Early settle</button>-->
-        <!--<button class="btn btn-warning" id="settleButton" onclick="App.settle()">Settle</button>-->
-    <!--</div>-->
-<!--</div>-->
 
 <ul id="newContractList" style="padding: 0">
 

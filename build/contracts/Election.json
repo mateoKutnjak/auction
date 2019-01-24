@@ -2598,12 +2598,12 @@
     "5778": {
       "events": {},
       "links": {},
-      "address": "0x2BC2Ba996f1818eb6b5AbaC62bff954FEd106c91",
-      "transactionHash": "0xdf5ae0fd2f5eb266968ac1b167df29ab4a4e415db5f12f5f671eabdfcc9039f3"
+      "address": "0x2FF89568759dd622e38EEA1EEDe5bbE0432173dd",
+      "transactionHash": "0x06a805bb86970f1c07e41b168e233ffcfcace35280b0fb45f3f4ae2bd0e9d60c"
     }
   },
   "schemaVersion": "3.0.1",
-  "updatedAt": "2019-01-20T16:11:50.626Z",
+  "updatedAt": "2019-01-24T13:33:44.712Z",
   "devdoc": {
     "methods": {}
   },

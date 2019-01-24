@@ -1,0 +1,41 @@
+% mkokot
+\documentclass[times, utf8, tehnicka_dokumentacija]{fer}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\newarray\tim
+
+% TODO: Navedite naslov rada.
+\def \naslov {Naslov}
+% TODO: Navedite verziju
+\def \ver {1.0}
+% TODO: Navedite broj članova tima
+\def \broj {3}
+% TODO: Navedite imena i prezimena članova tima.
+\readarray{tim}{Arthur Dent&Ford Prefect&Tricia Marie McMillan}
+% TODO: Navedite ime i prezime mentora.
+\def \mentor {Zaphod Beeblebrox}
+
+\fancypagestyle{plain}
+
+\begin{document}
+
+\title{\naslov}
+\verzija{\ver}
+\author{\tim}
+\size{\broj}
+\voditelj{\mentor}
+
+\maketitle
+\tableofcontents
+
+\chapter{Uvod}
+Uvod rada. Nakon uvoda dolaze poglavlja u kojima se obrađuje tema.
+
+\chapter{Zaključak}
+Zaključak.
+
+\bibliography{literatura}
+\bibliographystyle{fer}
+
+\end{document}

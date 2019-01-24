@@ -5,21 +5,21 @@ contract Auction {
     enum Outcome {
         NOT_FINISHED,
         NOT_SUCCESSFUL,
-        SUCCESSFUL
+        SUCCESSFUL,
+        SETTLED
     }
 
     Outcome public outcome;
 
     address payable public judgeAddress;
     address payable public sellerAddress;
-    address payable public currentHighestBidderAddress;
+    address payable public highestBidderAddress;
 
     uint public startTime;
     uint public currentTime;
-    uint public currentHighestBid;
+    uint public highestBid;
     uint public initialPrice;
     uint public biddingPeriod;
-    uint public lastBidTimestamp;
     uint public minimumPriceIncrement;
 
     constructor(address payable _sellerAddress, address payable _judgeAddress, uint _initialPrice, uint _biddingPeriodSeconds, uint _minimumPriceIncrement) public {
@@ -27,15 +27,10 @@ contract Auction {
         biddingPeriod = _biddingPeriodSeconds;
         minimumPriceIncrement = _minimumPriceIncrement;
 
-        lastBidTimestamp = 0;
         startTime = 0;
         currentTime = 0;
 
-        if (sellerAddress == address(0)) {
-            sellerAddress = msg.sender;
-        } else {
-            sellerAddress = _sellerAddress;
-        }
+        sellerAddress = _sellerAddress;
         judgeAddress = _judgeAddress;
 
         outcome = Outcome.NOT_FINISHED;
@@ -54,44 +49,33 @@ contract Auction {
             revert("Initial bid not higher than initial price. Returning funds to bidder...");
         }
 
-        if(msg.value < currentHighestBid + minimumPriceIncrement) {
+        if(msg.value < highestBid + minimumPriceIncrement) {
             msg.sender.transfer(msg.value);
             revert("Minimum price increment not satisfied. Returning funds to bidder...");
         }
 
-        if(currentHighestBidderAddress != address(0)) {
-            currentHighestBidderAddress.transfer(address(this).balance - msg.value);
+        if(highestBidderAddress != address(0)) {
+            highestBidderAddress.transfer(address(this).balance - msg.value);
         }
 
-        currentHighestBid = msg.value;
-        currentHighestBidderAddress = msg.sender;
-        lastBidTimestamp = currentTime;
+        highestBid = msg.value;
+        highestBidderAddress = msg.sender;
     }
 
     function settle() public {
         refreshOutcome();
 
         require(outcome == Outcome.SUCCESSFUL);
-        require(msg.sender == judgeAddress || msg.sender == sellerAddress);
+        require(msg.sender == judgeAddress);
 
-        sellerAddress.transfer(address(this).balance);
-    }
-
-    function settleEarly() public {
-        refreshOutcome();
-
-        require(outcome == Outcome.NOT_FINISHED, "For early settle outcome must be NOT_FINISHED.");
-        require(currentHighestBidderAddress != address(0), "For early settle highest bidder must exist.");
-        require(msg.sender == sellerAddress, "For early settle sender must be the seller.");
-
-        outcome = Outcome.SUCCESSFUL;
+        outcome = Outcome.SETTLED;
 
         sellerAddress.transfer(address(this).balance);
     }
 
     function refreshOutcome() internal {
-        if(currentTime - startTime >= biddingPeriod * 1 seconds) {
-            if(currentHighestBidderAddress != address(0)) {
+        if(currentTime - startTime >= biddingPeriod * 1 seconds && outcome != Outcome.SETTLED) {
+            if(highestBidderAddress != address(0)) {
                 outcome = Outcome.SUCCESSFUL;
             } else {
                 outcome = Outcome.NOT_SUCCESSFUL;

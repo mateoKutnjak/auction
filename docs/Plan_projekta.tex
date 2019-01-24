@@ -1,0 +1,42 @@
+% mkokot
+\documentclass[times, utf8, plan_projekta]{fer}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\newarray\tim
+
+% TODO: Navedite naslov rada.
+\def \naslov {Interakcija pametnim ugovorima web aplikacijom}
+% TODO: Navedite verziju
+\def \ver {1.0}
+% TODO: Navedite broj članova tima
+\def \broj {1}
+% TODO: Navedite imena i prezimena članova tima.
+\readarray{tim}{Mateo Kutnjak}
+% TODO: Navedite ime i prezime mentora.
+\def \mentor {Vladimir Čeperić}
+
+\fancypagestyle{plain}
+
+\begin{document}
+
+\title{\naslov}
+\verzija{\ver}
+\author{\tim}
+\size{\broj}
+\voditelj{\mentor}
+
+\maketitle
+\tableofcontents
+
+\chapter{Uvod}
+Od prestavljanja pametnih ugovora na Ethereum platformi 2015. godine, rad
+Uvod rada. Nakon uvoda dolaze poglavlja u kojima se obrađuje tema.
+
+\chapter{Zaključak}
+Zaključak.
+
+\bibliography{literatura}
+\bibliographystyle{fer}
+
+\end{document}
